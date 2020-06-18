@@ -46,7 +46,8 @@
   "dependencies": {
     "base64url": "^3.0.1",
     "cids": "^0.8.0",
-    "did-jwt": "^4.3.2",
+    "did-jwt": "^4.4.0",
+    "fast-json-stable-stringify": "^2.1.0",
     "is-circular": "^1.0.2",
     "lodash.transform": "^4.6.0"
   }
