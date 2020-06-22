@@ -84,14 +84,14 @@ function decode (parsed: GeneralJWS): DagJWS {
   return decoded
 }
 
-async function create (payload: Object, signer: Signer, header: Object): Promise<Buffer> {
+async function create (payload: Object, signer: Signer, header: Object): Promise<DagJWS> {
   // TODO - this function only supports single signature for now
   // non ideal way to sort for now
   payload = JSON.parse(stringify(toDagJson(payload)))
   if (header) header = JSON.parse(stringify(toDagJson(header)))
   const jws = await createJWS(payload, signer, header)
   const generalJws = fromSplit(jws.split('.'))
-  return Buffer.from(stringify(generalJws))
+  return decode(generalJws)
 }
 
 function verify (jws: DagJWS, publicKeys: PublicKey[]): PublicKey[] {

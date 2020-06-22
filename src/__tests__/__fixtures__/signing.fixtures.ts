@@ -90,5 +90,6 @@ const fixtures = {
     }
   }
 }
+it.skip('this is not a test', () => {})
 
 export default fixtures

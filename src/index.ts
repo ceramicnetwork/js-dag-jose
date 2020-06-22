@@ -1,11 +1,11 @@
-import jws, { GeneralJWS, DagJWS } from './jws'
-import jwe, { GeneralJWE, DagJWE } from './jwe'
+import signing, { GeneralJWS, DagJWS } from './signing'
+import encryption, { GeneralJWE, DagJWE } from './encryption'
 import stringify from 'fast-json-stable-stringify'
 
-function stringToJose (jose: string): GeneralJWS | GeneralJWE {
+function stringToJose (jose: String): GeneralJWS | GeneralJWE {
   const split = jose.split('.')
   if (split.length === 3) {
-    return jws.fromSplit(split)
+    return signing.fromSplit(split)
   } else if (split.length === 5) {
     return jwe.fromSplit(split)
   } else {
@@ -19,13 +19,13 @@ const name = 'dag-jose'
 // integer for the multiformat entry of the codec
 const code = 133 // 0x85 https://github.com/multiformats/multicodec/blob/master/table.csv
 
-function encode (obj: GeneralJWS | GeneralJWE | DagJWS | DagJWE | string): Buffer {
+function encode (obj: GeneralJWS | GeneralJWE | DagJWS | DagJWE | String): Buffer {
   // TODO - only encodes JWS nodes right now.
   let generalJose
-  if (typeof obj === string) {
+  if (typeof obj === 'string') {
     generalJose = stringToJose(obj)
   } else if (obj.payload) { // it's a JWS
-    generalJose = jws.encode(obj)
+    generalJose = signing.encode(obj)
   } else if (obj.ciphertext) { // it's a JWE
     generalJose = jwe.encode(obj)
   } else {
@@ -35,9 +35,11 @@ function encode (obj: GeneralJWS | GeneralJWE | DagJWS | DagJWE | string): Buffe
 }
 
 function decode (data: Buffer): DagJWS | DagJWE {
+  // ipld gives us an Uint8Array instead of buffer
+  if (data instanceof Uint8Array) data = Buffer.from(data)
   const parsed: GeneralJWS | GeneralJWE = JSON.parse(data)
   if (parsed.payload) { // it's a JWS
-    return jws.decode(parsed)
+    return signing.decode(parsed)
   } else if (parsed.ciphertext) { // it's a JWE
     return jwe.decode(parsed)
   } else {
@@ -45,11 +47,13 @@ function decode (data: Buffer): DagJWS | DagJWE {
   }
 }
 
-export {
+export default {
   name,
   code,
   encode,
   decode,
-  jws,
-  jwe
+  signing,
+  encryption,
+  DagJWS,
+  DagJWE
 }
