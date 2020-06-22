@@ -1,5 +1,5 @@
 {
-  "name": "ipld-dag-jose",
+  "name": "dag-jose",
   "version": "0.0.1",
   "description": "Typescript implementation of the IPLD dag-jose format",
   "main": "lib/index.js",
@@ -41,6 +41,7 @@
     "ipld": "^0.26.2",
     "ipld-in-memory": "^4.0.0",
     "jest": "^25.4.0",
+    "multiformats": "^1.0.7",
     "typescript": "^3.8.3"
   },
   "dependencies": {
@@ -50,5 +51,10 @@
     "fast-json-stable-stringify": "^2.1.0",
     "is-circular": "^1.0.2",
     "lodash.transform": "^4.6.0"
+  },
+  "jest": {
+    "transformIgnorePatterns": [
+      "/node_modules(?!/multiformats)/"
+    ]
   }
 }

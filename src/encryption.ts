@@ -32,14 +32,15 @@ type Encrypter = (data: string) => any // TODO - stricter types
 type Decrypter = (data: string) => any // TODO - stricter types
 
 function fromSplit (split: Array<string>): GeneralJWE {
-  const [protected, encrypted_key, iv, ciphertext, tag] = split
-  return {
-    ciphertext,
-    iv,
-    protected,
-    recipients: [{ encrypted_key }],
-    tag
-  }
+  throw new Error('Not implemented')
+  //const [protected, encrypted_key, iv, ciphertext, tag] = split
+  //return {
+    //ciphertext,
+    //iv,
+    //protected,
+    //recipients: [{ encrypted_key }],
+    //tag
+  //}
 }
 
 function encodeRecipient (parsed: DagRecipient): GeneralRecipient {
