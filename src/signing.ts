@@ -1,4 +1,4 @@
-import { toDagJson, fromDagJson } from './utils'
+import { encodeDagJson, decodeDagJson } from './utils'
 import { createJWS, verifyJWS } from 'did-jwt'
 import base64url from 'base64url'
 import stringify from 'fast-json-stable-stringify'
@@ -43,8 +43,8 @@ function encodeSignature (ds: DagSignature): GeneralSignature {
   const sign: GeneralSignature = {
     signature: base64url.encode(ds.signature)
   }
-  if (ds.header) sign.header = toDagJson(ds.header)
-  if (ds.protected) sign.protected = base64url.encode(JSON.stringify(toDagJson(ds.protected)))
+  if (ds.header) sign.header = encodeDagJson(ds.header)
+  if (ds.protected) sign.protected = base64url.encode(JSON.stringify(encodeDagJson(ds.protected)))
   return sign
 }
 
@@ -58,7 +58,7 @@ function encode (jws: DagJWS | GeneralJWS): GeneralJWS {
     if (Buffer.isBuffer(jws.payload)) {
       generalJws.payload = base64url.encode(jws.payload)
     } else {
-      generalJws.payload = base64url.encode(JSON.stringify(toDagJson(jws.payload)))
+      generalJws.payload = base64url.encode(JSON.stringify(encodeDagJson(jws.payload)))
     }
     return generalJws
   }
@@ -68,8 +68,8 @@ function decodeSignature (parsed: GeneralSignature): DagSignature {
   const sign: DagSignature = {
     signature: Buffer.from(parsed.signature, 'base64')
   }
-  if (parsed.header) sign.header = fromDagJson(parsed.header)
-  if (parsed.protected) sign.protected = fromDagJson(JSON.parse(Buffer.from(parsed.protected, 'base64')))
+  if (parsed.header) sign.header = decodeDagJson(parsed.header)
+  if (parsed.protected) sign.protected = decodeDagJson(JSON.parse(Buffer.from(parsed.protected, 'base64')))
   return sign
 }
 
@@ -79,7 +79,7 @@ function decode (parsed: GeneralJWS): DagJWS {
     signatures: parsed.signatures.map(decodeSignature)
   }
   try {
-    decoded.payload = fromDagJson(JSON.parse(decoded.payload))
+    decoded.payload = decodeDagJson(JSON.parse(decoded.payload))
   } catch (e) {} // return payload as buffer if it isn't json
   return decoded
 }
@@ -87,8 +87,8 @@ function decode (parsed: GeneralJWS): DagJWS {
 async function create (payload: Object, signer: Signer, header: Object): Promise<DagJWS> {
   // TODO - this function only supports single signature for now
   // non ideal way to sort for now
-  payload = JSON.parse(stringify(toDagJson(payload)))
-  if (header) header = JSON.parse(stringify(toDagJson(header)))
+  payload = JSON.parse(stringify(encodeDagJson(payload)))
+  if (header) header = JSON.parse(stringify(encodeDagJson(header)))
   const jws = await createJWS(payload, signer, header)
   const generalJws = fromSplit(jws.split('.'))
   return decode(generalJws)
@@ -96,7 +96,6 @@ async function create (payload: Object, signer: Signer, header: Object): Promise
 
 function verify (jws: DagJWS, publicKeys: PublicKey[]): PublicKey[] {
   // TODO - this function should use multikeys
-  // TODO - this function only supports single signatures for now
   const generalJws = encode(jws)
   const pubkeys = []
   for (const signObj of generalJws.signatures) {

@@ -20,7 +20,6 @@ const name = 'dag-jose'
 const code = 133 // 0x85 https://github.com/multiformats/multicodec/blob/master/table.csv
 
 function encode (obj: GeneralJWS | GeneralJWE | DagJWS | DagJWE | String): Buffer {
-  // TODO - only encodes JWS nodes right now.
   let generalJose
   if (typeof obj === 'string') {
     generalJose = stringToJose(obj)
@@ -54,6 +53,7 @@ export default {
   decode,
   signing,
   encryption,
+  // TODO how to export types?
   DagJWS,
   DagJWE
 }
