@@ -41,7 +41,7 @@
     "ipld": "^0.26.2",
     "ipld-in-memory": "^4.0.0",
     "jest": "^25.4.0",
-    "multiformats": "^1.0.7",
+    "multiformats": "^1.1.10",
     "typescript": "^3.8.3"
   },
   "dependencies": {
