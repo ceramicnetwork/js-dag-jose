@@ -4,6 +4,8 @@ This library provides a typescript implementation of the dag-jose codec for ipld
 
 It supports the new [multiformats](https://github.com/multiformats/js-multiformats) library in order to be compatible with both the current and future js-ipfs implementations.
 
+In addition to support for encoding and decoding dag-jose ipld format, this library also provides utility functions for creating and verifying JWS and in the future encrypting and decrypting JWE.
+
 
 ## Usage
 ```js
