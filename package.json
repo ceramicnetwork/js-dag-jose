@@ -55,6 +55,9 @@
   "jest": {
     "transformIgnorePatterns": [
       "/node_modules(?!/multiformats)/"
+    ],
+    "testPathIgnorePatterns": [
+      ".*__fixtures__.*"
     ]
   }
 }

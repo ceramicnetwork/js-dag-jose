@@ -1,13 +1,15 @@
 import signing, { GeneralJWS, DagJWS } from './signing'
+export type { DagJWS, GeneralJWS } from './signing'
 import encryption, { GeneralJWE, DagJWE } from './encryption'
+export type { DagJWE, GeneralJWE } from './encryption'
 import stringify from 'fast-json-stable-stringify'
 
-function stringToJose (jose: String): GeneralJWS | GeneralJWE {
+function stringToJose (jose: string): GeneralJWS | GeneralJWE {
   const split = jose.split('.')
   if (split.length === 3) {
     return signing.fromSplit(split)
   } else if (split.length === 5) {
-    return jwe.fromSplit(split)
+    return encryption.fromSplit(split)
   } else {
     throw new Error('Not a valid JOSE string')
   }
@@ -19,14 +21,22 @@ const name = 'dag-jose'
 // integer for the multiformat entry of the codec
 const code = 133 // 0x85 https://github.com/multiformats/multicodec/blob/master/table.csv
 
-function encode (obj: GeneralJWS | GeneralJWE | DagJWS | DagJWE | String): Buffer {
+function isJWS(jose: GeneralJWS | GeneralJWE | DagJWS | DagJWE): jose is GeneralJWS | DagJWS {
+  return 'payload' in jose
+}
+
+function isJWE(jose: GeneralJWS | GeneralJWE | DagJWS | DagJWE): jose is GeneralJWE | DagJWE {
+  return 'ciphertext' in jose
+}
+
+function encode (obj: GeneralJWS | GeneralJWE | DagJWS | DagJWE | string): Buffer {
   let generalJose
   if (typeof obj === 'string') {
     generalJose = stringToJose(obj)
-  } else if (obj.payload) { // it's a JWS
+  } else if (isJWS(obj)) {
     generalJose = signing.encode(obj)
-  } else if (obj.ciphertext) { // it's a JWE
-    generalJose = jwe.encode(obj)
+  } else if (isJWE(obj)) {
+    generalJose = encryption.encode(obj)
   } else {
     throw new Error('Not a valid JOSE object')
   }
@@ -36,11 +46,11 @@ function encode (obj: GeneralJWS | GeneralJWE | DagJWS | DagJWE | String): Buffe
 function decode (data: Buffer): DagJWS | DagJWE {
   // ipld gives us an Uint8Array instead of buffer
   if (data instanceof Uint8Array) data = Buffer.from(data)
-  const parsed: GeneralJWS | GeneralJWE = JSON.parse(data)
-  if (parsed.payload) { // it's a JWS
+  const parsed: GeneralJWS | GeneralJWE = JSON.parse(data.toString())
+  if (isJWS(parsed)) {
     return signing.decode(parsed)
-  } else if (parsed.ciphertext) { // it's a JWE
-    return jwe.decode(parsed)
+  } else if (isJWE(parsed)) {
+    return encryption.decode(parsed)
   } else {
     throw new Error('Not a valid DAG-JOSE object')
   }
@@ -50,10 +60,9 @@ export default {
   name,
   code,
   encode,
-  decode,
+  decode
+}
+export {
   signing,
-  encryption,
-  // TODO how to export types?
-  DagJWS,
-  DagJWE
+  encryption
 }

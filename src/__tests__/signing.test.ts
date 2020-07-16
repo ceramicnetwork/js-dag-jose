@@ -1,15 +1,14 @@
-import signing, { GeneralJWS, DagJWS } from '../signing'
+import signing from '../signing'
 import fixtures from './__fixtures__/signing.fixtures'
 import CID from 'cids'
-import { createJWS, EllipticSigner } from 'did-jwt'
+import { EllipticSigner } from 'did-jwt'
 
 
 describe('Signing support', () => {
-  let signer1, signer2
+  let signer1
 
   beforeAll(() => {
     signer1 = new EllipticSigner(fixtures.keys[0].priv)
-    signer2 = new EllipticSigner(fixtures.keys[1].priv)
   })
 
   describe('Decoding', () => {
@@ -101,9 +100,9 @@ describe('Signing support', () => {
 
     it('Verify throw error with wrong pubkey', async () => {
       let fn
-      fn = () => signing.verify(fixtures.dagJws.oneSigWLinks[0], [fixtures.keys[1].pub])
+      fn = (): void => signing.verify(fixtures.dagJws.oneSigWLinks[0], [fixtures.keys[1].pub])
       expect(fn).toThrowError(/Signature invalid/)
-      fn = () => signing.verify(fixtures.dagJws.mutipleSigWLinks, [fixtures.keys[0].pub])
+      fn = (): void => signing.verify(fixtures.dagJws.mutipleSigWLinks, [fixtures.keys[0].pub])
       expect(fn).toThrowError(/Signature invalid/)
     })
   })

@@ -10,9 +10,9 @@ import stringify from 'fast-json-stable-stringify'
 
 
 describe('dag-jose codec', () => {
-  let ipld, signer
+  let signer
 
-  describe.skip('Signing', () => {
+  describe('Signing', () => {
     it('Encode string', async () => {
       const encoded = dagJose.encode(sFixtures.compact)
       const expected = Buffer.from(stringify(sFixtures.generalJws.oneSig[0]))
@@ -47,7 +47,7 @@ describe('dag-jose codec', () => {
       expect(decoded).toEqual(sFixtures.dagJws.mutipleSigWLinks)
     })
 
-    it('IPLD integration', async () => {
+    it.skip('IPLD integration', async () => {
       const ipld = await ipldInMem(IPLD)
       multiformats.multicodec.add(dagJose)
       const format = legacy(multiformats, dagJose.name)
@@ -65,12 +65,15 @@ describe('dag-jose codec', () => {
 
   describe.skip('Encryption', () => {
     it('Encode string', async () => {
+      // TODO
     })
 
     it('Encode general', async () => {
+      // TODO
     })
 
     it('Encode dagJose', async () => {
+      // TODO
     })
 
     it('Decode Buffer', async () => {
@@ -79,6 +82,7 @@ describe('dag-jose codec', () => {
     })
 
     it('Decode Uint8Array', async () => {
+      // TODO
     })
   })
 

@@ -1,6 +1,6 @@
 interface GeneralRecipient {
   encrypted_key?: string;
-  header?: Object;
+  header?: Record<string, any>;
 }
 
 interface GeneralJWE {
@@ -10,22 +10,22 @@ interface GeneralJWE {
   protected?: string;
   recipients: Array<GeneralRecipient>;
   tag?: string;
-  unprotected?: Object;
+  unprotected?: Record<string, any>;
 }
 
 interface DagRecipient {
   encrypted_key?: Buffer;
-  header?: Object;
+  header?: Record<string, any>;
 }
 
 interface DagJWE {
   aad?: Buffer;
   ciphertext: Buffer;
   iv?: Buffer;
-  protected?: Object;
+  protected?: Record<string, any>;
   recipients: Array<DagRecipient>;
   tag?: Buffer;
-  unprotected?: Object;
+  unprotected?: Record<string, any>;
 }
 
 type Encrypter = (data: string) => any // TODO - stricter types
@@ -59,16 +59,14 @@ function decode (parsed: GeneralJWE): DagJWE {
   throw new Error('Not implemented')
 }
 
-async function create (payload: any, header: any, encrypt: Encrypter): Promise<Buffer> {
+async function create (payload: any, header: any, encrypt: Encrypter): Promise<DagJWE> {
   throw new Error('Not implemented')
   // TODO - Implement JWE creation with x25519 + xchacha20-poly1305
-  return {}
 }
 
-async function decrypt (node: JOSENode, decrypt: Decrypter): Promise<any> {
+async function decrypt (node: DagJWE, decrypt: Decrypter): Promise<any> {
   throw new Error('Not implemented')
   // TODO - Implement JWE decryption
-  return {}
 }
 
 export default {
