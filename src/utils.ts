@@ -1,12 +1,8 @@
 import CID from 'cids'
-import isCircular from 'is-circular'
 import transform from 'lodash.transform'
 
 // copied from https://github.com/ipld/js-dag-json/blob/master/index.js
-function encodeDagJson (obj: Object): Object {
-  if (isCircular(obj)) {
-    throw new Error('Object contains circular references.')
-  }
+function encodeDagJson (obj: Record<string, any>): Record<string, any> {
   return transform(obj, (result, value, key) => {
     if (CID.isCID(value)) {
       result[key] = { '/': value.toString() }
@@ -21,7 +17,7 @@ function encodeDagJson (obj: Object): Object {
 }
 
 // copied from https://github.com/ipld/js-dag-json/blob/master/index.js
-function decodeDagJson (obj: Object): Object {
+function decodeDagJson (obj: Record<string, any>): Record<string, any> {
   return transform(obj, (result, value: any, key) => {
     if (typeof value === 'object' && value !== null) {
       if (value['/']) {
