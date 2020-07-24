@@ -2,7 +2,7 @@ import CID from 'cids'
 import transform from 'lodash.transform'
 
 // copied from https://github.com/ipld/js-dag-json/blob/master/index.js
-function encodeDagJson (obj: Record<string, any>): Record<string, any> {
+function encodeDagJson(obj: Record<string, any>): Record<string, any> {
   return transform(obj, (result, value, key) => {
     if (CID.isCID(value)) {
       result[key] = { '/': value.toString() }
@@ -17,7 +17,7 @@ function encodeDagJson (obj: Record<string, any>): Record<string, any> {
 }
 
 // copied from https://github.com/ipld/js-dag-json/blob/master/index.js
-function decodeDagJson (obj: Record<string, any>): Record<string, any> {
+function decodeDagJson(obj: Record<string, any>): Record<string, any> {
   return transform(obj, (result, value: any, key) => {
     if (typeof value === 'object' && value !== null) {
       if (value['/']) {
