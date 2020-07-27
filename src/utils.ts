@@ -11,6 +11,7 @@ function encodeDagJson(obj: Record<string, any>): Record<string, any> {
     } else if (typeof value === 'object' && value !== null) {
       result[key] = encodeDagJson(value)
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       result[key] = value
     }
   })
@@ -20,6 +21,7 @@ function encodeDagJson(obj: Record<string, any>): Record<string, any> {
 function decodeDagJson(obj: Record<string, any>): Record<string, any> {
   return transform(obj, (result, value: any, key) => {
     if (typeof value === 'object' && value !== null) {
+      /* eslint-disable @typescript-eslint/no-unsafe-member-access */
       if (value['/']) {
         if (typeof value['/'] === 'string') result[key] = new CID(value['/'])
         else if (typeof value['/'] === 'object' && value['/'].base64) {
@@ -28,7 +30,9 @@ function decodeDagJson(obj: Record<string, any>): Record<string, any> {
       } else {
         result[key] = decodeDagJson(value)
       }
+      /* eslint-enable @typescript-eslint/no-unsafe-member-access */
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       result[key] = value
     }
   })

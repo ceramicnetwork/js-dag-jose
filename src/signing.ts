@@ -48,7 +48,7 @@ function encodeSignature(ds: DagSignature): GeneralSignature {
   if (ds.header) sign.header = encodeDagJson(ds.header)
   if (ds.protected)
     sign.protected = base64url.encode(
-      JSON.stringify(encodeDagJson(ds.protected)),
+      JSON.stringify(encodeDagJson(ds.protected))
     )
   return sign
 }
@@ -70,7 +70,7 @@ function encode(jws: DagJWS | GeneralJWS): GeneralJWS {
       generalJws.payload = base64url.encode(jws.payload)
     } else {
       generalJws.payload = base64url.encode(
-        JSON.stringify(encodeDagJson(jws.payload)),
+        JSON.stringify(encodeDagJson(jws.payload))
       )
     }
     return generalJws
@@ -84,7 +84,7 @@ function decodeSignature(parsed: GeneralSignature): DagSignature {
   if (parsed.header) sign.header = decodeDagJson(parsed.header)
   if (parsed.protected)
     sign.protected = decodeDagJson(
-      JSON.parse(Buffer.from(parsed.protected, 'base64').toString()),
+      JSON.parse(Buffer.from(parsed.protected, 'base64').toString())
     )
   return sign
 }
@@ -105,19 +105,22 @@ function decode(parsed: GeneralJWS): DagJWS {
 async function create(
   payload: Record<string, any>,
   signer: Signer,
-  protectedHeader: Record<string, any>,
+  protectedHeader: Record<string, any>
 ): Promise<DagJWS> {
   // TODO - this function only supports single signature for now
   // non ideal way to sort for now
-  payload = JSON.parse(stringify(encodeDagJson(payload)))
-  if (protectedHeader)
-    protectedHeader = JSON.parse(stringify(encodeDagJson(protectedHeader)))
+  payload = JSON.parse(stringify(encodeDagJson(payload))) as Record<string, any>
+  if (protectedHeader) {
+    protectedHeader = JSON.parse(
+      stringify(encodeDagJson(protectedHeader))
+    ) as Record<string, any>
+  }
   const jws = await createJWS(payload, signer, protectedHeader)
   const generalJws = fromSplit(jws.split('.'))
   return decode(generalJws)
 }
 
-function verify(jws: DagJWS, publicKeys: PublicKey[]): PublicKey[] {
+function verify(jws: DagJWS, publicKeys: Array<PublicKey>): Array<PublicKey> {
   // TODO - this function should use multikeys
   const generalJws = encode(jws)
   const pubkeys = []

@@ -22,19 +22,19 @@ const name = 'dag-jose'
 const code = 133 // 0x85 https://github.com/multiformats/multicodec/blob/master/table.csv
 
 function isJWS(
-  jose: GeneralJWS | GeneralJWE | DagJWS | DagJWE,
+  jose: GeneralJWS | GeneralJWE | DagJWS | DagJWE
 ): jose is GeneralJWS | DagJWS {
   return 'payload' in jose
 }
 
 function isJWE(
-  jose: GeneralJWS | GeneralJWE | DagJWS | DagJWE,
+  jose: GeneralJWS | GeneralJWE | DagJWS | DagJWE
 ): jose is GeneralJWE | DagJWE {
   return 'ciphertext' in jose
 }
 
 function encode(
-  obj: GeneralJWS | GeneralJWE | DagJWS | DagJWE | string,
+  obj: GeneralJWS | GeneralJWE | DagJWS | DagJWE | string
 ): Buffer {
   let generalJose
   if (typeof obj === 'string') {
@@ -52,7 +52,7 @@ function encode(
 function decode(data: Buffer): DagJWS | DagJWE {
   // ipld gives us an Uint8Array instead of buffer
   if (data instanceof Uint8Array) data = Buffer.from(data)
-  const parsed: GeneralJWS | GeneralJWE = JSON.parse(data.toString())
+  const parsed = JSON.parse(data.toString()) as GeneralJWS | GeneralJWE
   if (isJWS(parsed)) {
     return signing.decode(parsed)
   } else if (isJWE(parsed)) {

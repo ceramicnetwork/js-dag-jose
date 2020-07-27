@@ -1,8 +1,7 @@
-import signing from '../signing'
+import signing from '../src/signing'
 import fixtures from './__fixtures__/signing.fixtures'
 import CID from 'cids'
 import { EllipticSigner } from 'did-jwt'
-
 
 describe('Signing support', () => {
   let signer1
@@ -14,7 +13,9 @@ describe('Signing support', () => {
   describe('Decoding', () => {
     it('Decodes from compact encoding', async () => {
       const compact = fixtures.compact
-      expect(signing.fromSplit(compact.split('.'))).toEqual(fixtures.generalJws.oneSig[0])
+      expect(signing.fromSplit(compact.split('.'))).toEqual(
+        fixtures.generalJws.oneSig[0]
+      )
     })
 
     it('Decodes general encoding, one signature', async () => {
@@ -84,25 +85,37 @@ describe('Signing support', () => {
       expect(pubkey).toEqual([fixtures.keys[0].pub])
       pubkey = signing.verify(fixtures.dagJws.oneSig[1], [fixtures.keys[0].pub])
       expect(pubkey).toEqual([fixtures.keys[0].pub])
-      pubkey = signing.verify(fixtures.dagJws.oneSigWLinks[0], [fixtures.keys[0].pub])
+      pubkey = signing.verify(fixtures.dagJws.oneSigWLinks[0], [
+        fixtures.keys[0].pub,
+      ])
       expect(pubkey).toEqual([fixtures.keys[0].pub])
-      pubkey = signing.verify(fixtures.dagJws.oneSigWLinks[1], [fixtures.keys[1].pub])
+      pubkey = signing.verify(fixtures.dagJws.oneSigWLinks[1], [
+        fixtures.keys[1].pub,
+      ])
       expect(pubkey).toEqual([fixtures.keys[1].pub])
     })
 
     it('Verifies multiple correct signatures', async () => {
       let pubkeys
-      pubkeys = signing.verify(fixtures.dagJws.mutipleSig, [fixtures.keys[0].pub, fixtures.keys[1].pub])
+      pubkeys = signing.verify(fixtures.dagJws.mutipleSig, [
+        fixtures.keys[0].pub,
+        fixtures.keys[1].pub,
+      ])
       expect(pubkeys).toEqual([fixtures.keys[0].pub, fixtures.keys[1].pub])
-      pubkeys = signing.verify(fixtures.dagJws.mutipleSigWLinks, [fixtures.keys[1].pub, fixtures.keys[0].pub])
+      pubkeys = signing.verify(fixtures.dagJws.mutipleSigWLinks, [
+        fixtures.keys[1].pub,
+        fixtures.keys[0].pub,
+      ])
       expect(pubkeys).toEqual([fixtures.keys[0].pub, fixtures.keys[1].pub])
     })
 
     it('Verify throw error with wrong pubkey', async () => {
       let fn
-      fn = (): void => signing.verify(fixtures.dagJws.oneSigWLinks[0], [fixtures.keys[1].pub])
+      fn = (): void =>
+        signing.verify(fixtures.dagJws.oneSigWLinks[0], [fixtures.keys[1].pub])
       expect(fn).toThrowError(/Signature invalid/)
-      fn = (): void => signing.verify(fixtures.dagJws.mutipleSigWLinks, [fixtures.keys[0].pub])
+      fn = (): void =>
+        signing.verify(fixtures.dagJws.mutipleSigWLinks, [fixtures.keys[0].pub])
       expect(fn).toThrowError(/Signature invalid/)
     })
   })
@@ -116,10 +129,15 @@ describe('Signing support', () => {
       dagJws = await signing.create({ b: 2, a: 1 }, signer1)
       expect(dagJws).toEqual(fixtures.dagJws.oneSig[0])
       // should handle links and buffers in payload
-      dagJws = await signing.create({
-        b: new CID('bafybeig6xv5nwphfmvcnektpnojts33jqcuam7bmye2pb54adnrtccjlsu'),
-        a: Buffer.from('11', 'hex')
-      }, signer1)
+      dagJws = await signing.create(
+        {
+          b: new CID(
+            'bafybeig6xv5nwphfmvcnektpnojts33jqcuam7bmye2pb54adnrtccjlsu'
+          ),
+          a: Buffer.from('11', 'hex'),
+        },
+        signer1
+      )
       expect(dagJws).toEqual(fixtures.dagJws.oneSigWLinks[0])
     })
   })

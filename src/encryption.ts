@@ -31,6 +31,8 @@ interface DagJWE {
 type Encrypter = (data: string) => any // TODO - stricter types
 type Decrypter = (data: string) => any // TODO - stricter types
 
+/* eslint-disable */
+
 function fromSplit(split: Array<string>): GeneralJWE {
   throw new Error('Not implemented')
   //const [protected, encrypted_key, iv, ciphertext, tag] = split
@@ -43,7 +45,7 @@ function fromSplit(split: Array<string>): GeneralJWE {
   //}
 }
 
-function encodeRecipient(parsed: DagRecipient): GeneralRecipient {
+function encodeRecipient(_parsed: DagRecipient): GeneralRecipient {
   throw new Error('Not implemented')
 }
 
@@ -62,7 +64,7 @@ function decode(parsed: GeneralJWE): DagJWE {
 async function create(
   payload: any,
   header: any,
-  encrypt: Encrypter,
+  encrypt: Encrypter
 ): Promise<DagJWE> {
   throw new Error('Not implemented')
   // TODO - Implement JWE creation with x25519 + xchacha20-poly1305
@@ -72,6 +74,8 @@ async function decrypt(node: DagJWE, decrypt: Decrypter): Promise<any> {
   throw new Error('Not implemented')
   // TODO - Implement JWE decryption
 }
+
+/* eslint-enable */
 
 export default {
   fromSplit,

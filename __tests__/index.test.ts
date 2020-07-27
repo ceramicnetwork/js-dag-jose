@@ -1,4 +1,4 @@
-import dagJose from '../index'
+import dagJose from '../src/index'
 import sFixtures from './__fixtures__/signing.fixtures'
 import multiformats from 'multiformats/basics.js'
 import legacy from 'multiformats/legacy.js'
@@ -7,7 +7,6 @@ import ipldInMem from 'ipld-in-memory'
 import CID from 'cids'
 import { EllipticSigner } from 'did-jwt'
 import stringify from 'fast-json-stable-stringify'
-
 
 describe('dag-jose codec', () => {
   let signer
@@ -33,17 +32,27 @@ describe('dag-jose codec', () => {
 
     it('Decode Buffer', async () => {
       let decoded
-      decoded = dagJose.decode(Buffer.from(stringify(sFixtures.generalJws.oneSig[1])))
+      decoded = dagJose.decode(
+        Buffer.from(stringify(sFixtures.generalJws.oneSig[1]))
+      )
       expect(decoded).toEqual(sFixtures.dagJws.oneSig[1])
-      decoded = dagJose.decode(Buffer.from(stringify(sFixtures.generalJws.mutipleSigWLinks)))
+      decoded = dagJose.decode(
+        Buffer.from(stringify(sFixtures.generalJws.mutipleSigWLinks))
+      )
       expect(decoded).toEqual(sFixtures.dagJws.mutipleSigWLinks)
     })
 
     it('Decode Uint8Array', async () => {
       let decoded
-      decoded = dagJose.decode(new Uint8Array(Buffer.from(stringify(sFixtures.generalJws.oneSig[1]))))
+      decoded = dagJose.decode(
+        new Uint8Array(Buffer.from(stringify(sFixtures.generalJws.oneSig[1])))
+      )
       expect(decoded).toEqual(sFixtures.dagJws.oneSig[1])
-      decoded = dagJose.decode(new Uint8Array(Buffer.from(stringify(sFixtures.generalJws.mutipleSigWLinks))))
+      decoded = dagJose.decode(
+        new Uint8Array(
+          Buffer.from(stringify(sFixtures.generalJws.mutipleSigWLinks))
+        )
+      )
       expect(decoded).toEqual(sFixtures.dagJws.mutipleSigWLinks)
     })
 
@@ -57,7 +66,9 @@ describe('dag-jose codec', () => {
       const dagJws = await dagJose.signing.create(payload, signer)
       expect(dagJws).toEqual(sFixtures.dagJws.oneSig[0])
       const cid = await ipld.put(dagJws, format.codec)
-      expect(cid).toEqual(new CID('bagcqcera73rupyla6bauseyk75rslfys3st25spm75ykhvgusqvv2zfqtucq'))
+      expect(cid).toEqual(
+        new CID('bagcqcera73rupyla6bauseyk75rslfys3st25spm75ykhvgusqvv2zfqtucq')
+      )
       const data = await ipld.get(cid)
       expect(data).toEqual(sFixtures.dagJws.oneSig[0])
     })
@@ -88,11 +99,15 @@ describe('dag-jose codec', () => {
 
   it('Encode throws error with invalid object', async () => {
     const notJose = { aa: 'bb' }
-    expect(() => dagJose.encode(notJose)).toThrowError('Not a valid JOSE object')
+    expect(() => dagJose.encode(notJose)).toThrowError(
+      'Not a valid JOSE object'
+    )
   })
 
   it('Decode throws error with invalid object', async () => {
     const notJose = JSON.stringify({ aa: 'bb' })
-    expect(() => dagJose.decode(notJose)).toThrowError('Not a valid DAG-JOSE object')
+    expect(() => dagJose.decode(notJose)).toThrowError(
+      'Not a valid DAG-JOSE object'
+    )
   })
 })
