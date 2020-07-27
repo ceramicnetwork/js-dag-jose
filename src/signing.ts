@@ -102,11 +102,11 @@ function decode(parsed: GeneralJWS): DagJWS {
   return decoded
 }
 
-async function create(
+async function createString(
   payload: Record<string, any>,
   signer: Signer,
-  protectedHeader: Record<string, any>
-): Promise<DagJWS> {
+  protectedHeader?: Record<string, any>
+): Promise<string> {
   // TODO - this function only supports single signature for now
   // non ideal way to sort for now
   payload = JSON.parse(stringify(encodeDagJson(payload))) as Record<string, any>
@@ -115,7 +115,15 @@ async function create(
       stringify(encodeDagJson(protectedHeader))
     ) as Record<string, any>
   }
-  const jws = await createJWS(payload, signer, protectedHeader)
+  return await createJWS(payload, signer, protectedHeader)
+}
+
+async function create(
+  payload: Record<string, any>,
+  signer: Signer,
+  protectedHeader?: Record<string, any>
+): Promise<DagJWS> {
+  const jws = await createString(payload, signer, protectedHeader)
   const generalJws = fromSplit(jws.split('.'))
   return decode(generalJws)
 }
@@ -135,6 +143,7 @@ export default {
   fromSplit,
   encode,
   decode,
+  createString,
   create,
   verify,
 }
