@@ -1,4 +1,6 @@
 # dag-jose
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fceramicnetwork%2Fjs-dag-jose.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fceramicnetwork%2Fjs-dag-jose?ref=badge_shield)
+
 
 This library provides a typescript implementation of the dag-jose codec for ipld.
 
@@ -37,3 +39,7 @@ const obj = await ipfs.dat.get(cid)
 
 ## Maintainer
 [Joel Thorstensson](https://github.com/oed)
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fceramicnetwork%2Fjs-dag-jose.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fceramicnetwork%2Fjs-dag-jose?ref=badge_large)
