@@ -52,8 +52,14 @@ function encodeSignature(signature: JWSSignature): EncodedSignature {
 }
 
 function encode(jws: DagJWS): EncodedJWS {
+  const payload = base64url.toBuffer(jws.payload)
+  try {
+    new CID(payload)
+  } catch (e) {
+    throw new Error('Not a valid DagJWS')
+  }
   const encodedJws: EncodedJWS = {
-    payload: base64url.toBuffer(jws.payload),
+    payload,
     signatures: jws.signatures.map(encodeSignature),
   }
   return encodedJws
