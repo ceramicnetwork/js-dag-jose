@@ -4,7 +4,7 @@ import encryption, { DagJWE, EncodedJWE, createDagJWE, decryptDagJWE } from './e
 export type { DagJWE } from './encryption'
 import cbor from 'borc'
 
-function stringToJose (jose: string): EncodedJWS | EncodedJWE {
+function stringToJose(jose: string): EncodedJWS | EncodedJWE {
   const split = jose.split('.')
   if (split.length === 3) {
     return signing.encode(signing.fromSplit(split))
@@ -29,7 +29,7 @@ function isJWE(jose: DagJWS | DagJWE | EncodedJWS | EncodedJWE): jose is DagJWE 
   return 'ciphertext' in jose
 }
 
-function encode (obj: DagJWS | DagJWE | string): Buffer {
+function encode(obj: DagJWS | DagJWE | string): Buffer {
   let encodedJose
   if (typeof obj === 'string') {
     encodedJose = stringToJose(obj)
@@ -43,7 +43,7 @@ function encode (obj: DagJWS | DagJWE | string): Buffer {
   return cbor.encode(encodedJose)
 }
 
-function decode (data: Buffer): DagJWS | DagJWE {
+function decode(data: Buffer): DagJWS | DagJWE {
   // ipld gives us an Uint8Array instead of buffer
   if (data instanceof Uint8Array) data = Buffer.from(data)
   let encoded: EncodedJWS | EncodedJWE
@@ -65,11 +65,6 @@ export default {
   name,
   code,
   encode,
-  decode
+  decode,
 }
-export {
-  createDagJWS,
-  verifyDagJWS,
-  createDagJWE,
-  decryptDagJWE,
-}
+export { createDagJWS, verifyDagJWS, createDagJWE, decryptDagJWE }

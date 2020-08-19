@@ -1,4 +1,4 @@
-import dagJose, { createDagJWS } from '../index'
+import dagJose, { createDagJWS } from '../src/index'
 import sFixtures from './__fixtures__/signing.fixtures'
 // TODO - multiformats imports not working, ignoring for now.
 //import multiformats from 'multiformats'
@@ -8,15 +8,14 @@ import ipldInMem from 'ipld-in-memory'
 import CID from 'cids'
 import { EllipticSigner } from 'did-jwt'
 
-
 describe('dag-jose codec', () => {
   describe('DagJWS', () => {
-    it('Encode compact jws', async () => {
+    it('Encode compact jws', () => {
       const encoded = dagJose.encode(sFixtures.compact)
       expect(encoded).toEqual(sFixtures.blockEncoded.oneSig[0])
     })
 
-    it('Encode general jws', async () => {
+    it('Encode general jws', () => {
       let encoded = dagJose.encode(sFixtures.dagJws.oneSig[0])
       expect(encoded).toEqual(sFixtures.blockEncoded.oneSig[0])
 
@@ -27,7 +26,7 @@ describe('dag-jose codec', () => {
       expect(encoded).toEqual(sFixtures.blockEncoded.multipleSig)
     })
 
-    it('Decode Buffer', async () => {
+    it('Decode Buffer', () => {
       let decoded
       decoded = dagJose.decode(sFixtures.blockEncoded.oneSig[0])
       expect(decoded).toEqual(sFixtures.dagJws.oneSig[0])
@@ -36,7 +35,7 @@ describe('dag-jose codec', () => {
       expect(decoded).toEqual(sFixtures.dagJws.multipleSig)
     })
 
-    it('Decode Uint8Array', async () => {
+    it('Decode Uint8Array', () => {
       let decoded
       decoded = dagJose.decode(new Uint8Array(sFixtures.blockEncoded.oneSig[1]))
       expect(decoded).toEqual(sFixtures.dagJws.oneSig[1])
@@ -82,12 +81,12 @@ describe('dag-jose codec', () => {
     })
   })
 
-  it('Encode throws error with invalid object', async () => {
+  it('Encode throws error with invalid object', () => {
     const notJose = { aa: 'bb' }
     expect(() => dagJose.encode(notJose)).toThrowError('Not a valid JOSE object')
   })
 
-  it('Decode throws error with invalid object', async () => {
+  it('Decode throws error with invalid object', () => {
     const notJose = JSON.stringify({ aa: 'bb' })
     expect(() => dagJose.decode(notJose)).toThrowError('Not a valid DAG-JOSE object')
   })

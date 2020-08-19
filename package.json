@@ -8,7 +8,7 @@
     "build": "./node_modules/.bin/tsc -p tsconfig.json",
     "prepublishOnly": "npm run build",
     "prebuild": "npm run clean",
-    "lint": "./node_modules/.bin/eslint ./src --ext .js,.jsx,.ts,.tsx",
+    "lint": "./node_modules/.bin/eslint ./src --ext .js,.ts",
     "clean": "rm -rf ./lib"
   },
   "repository": {
@@ -37,11 +37,13 @@
     "@typescript-eslint/parser": "^2.30.0",
     "babel-jest": "^25.4.0",
     "eslint": "^6.8.0",
+    "eslint-config-3box": "^0.1.2",
     "eslint-plugin-jest": "^23.8.2",
     "ipld": "^0.27.1",
     "ipld-in-memory": "^6.0.0",
     "jest": "^25.4.0",
     "multiformats": "^3.0.0",
+    "prettier": "^2.0.5",
     "typescript": "^3.8.3"
   },
   "dependencies": {

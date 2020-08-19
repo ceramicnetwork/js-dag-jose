@@ -10,7 +10,6 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "sourceMap": true,
-    "baseUrl": "./packages",
     "outDir": "lib",
     "rootDir": "src"
   },
