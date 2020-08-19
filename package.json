@@ -1,6 +1,6 @@
 {
   "name": "dag-jose",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Typescript implementation of the IPLD dag-jose format",
   "main": "lib/index.js",
   "scripts": {
@@ -38,19 +38,18 @@
     "babel-jest": "^25.4.0",
     "eslint": "^6.8.0",
     "eslint-plugin-jest": "^23.8.2",
-    "ipld": "^0.26.2",
-    "ipld-in-memory": "^4.0.0",
+    "ipld": "^0.27.1",
+    "ipld-in-memory": "^6.0.0",
     "jest": "^25.4.0",
-    "multiformats": "^1.1.10",
+    "multiformats": "^3.0.0",
     "typescript": "^3.8.3"
   },
   "dependencies": {
     "base64url": "^3.0.1",
-    "cids": "^0.8.0",
-    "did-jwt": "^4.4.0",
-    "fast-json-stable-stringify": "^2.1.0",
-    "is-circular": "^1.0.2",
-    "lodash.transform": "^4.6.0"
+    "borc": "^2.1.2",
+    "cids": "^1.0.0",
+    "did-jwt": "^4.5.0",
+    "fast-json-stable-stringify": "^2.1.0"
   },
   "jest": {
     "transformIgnorePatterns": [

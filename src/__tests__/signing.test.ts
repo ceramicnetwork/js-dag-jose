@@ -1,126 +1,96 @@
-import signing from '../signing'
+import signing, { createDagJWS, verifyDagJWS } from '../signing'
 import fixtures from './__fixtures__/signing.fixtures'
 import CID from 'cids'
 import { EllipticSigner } from 'did-jwt'
 
 
 describe('Signing support', () => {
-  let signer1
+  let signer1, signer2
 
   beforeAll(() => {
     signer1 = new EllipticSigner(fixtures.keys[0].priv)
+    signer2 = new EllipticSigner(fixtures.keys[1].priv)
   })
 
-  describe('Decoding', () => {
-    it('Decodes from compact encoding', async () => {
+  describe('fromSplit', () => {
+    it('Converts split jws to a general jws', async () => {
       const compact = fixtures.compact
-      expect(signing.fromSplit(compact.split('.'))).toEqual(fixtures.generalJws.oneSig[0])
+      expect(signing.fromSplit(compact.split('.'))).toEqual(fixtures.general)
     })
 
+  })
+
+  describe('decode', () => {
     it('Decodes general encoding, one signature', async () => {
       let decoded
-      decoded = signing.decode(fixtures.generalJws.oneSig[0])
+      decoded = signing.decode(fixtures.encodedJws.oneSig[0])
       expect(decoded).toEqual(fixtures.dagJws.oneSig[0])
 
-      decoded = signing.decode(fixtures.generalJws.oneSig[1])
+      decoded = signing.decode(fixtures.encodedJws.oneSig[1])
       expect(decoded).toEqual(fixtures.dagJws.oneSig[1])
-
-      decoded = signing.decode(fixtures.generalJws.oneSigWLinks[0])
-      expect(decoded).toEqual(fixtures.dagJws.oneSigWLinks[0])
-
-      decoded = signing.decode(fixtures.generalJws.oneSigWLinks[1])
-      expect(decoded).toEqual(fixtures.dagJws.oneSigWLinks[1])
     })
 
     it('Decodes general encoding, multiple signatures', async () => {
-      let decoded
-      decoded = signing.decode(fixtures.generalJws.mutipleSig)
-      expect(decoded).toEqual(fixtures.dagJws.mutipleSig)
-
-      decoded = signing.decode(fixtures.generalJws.mutipleSigWLinks)
-      expect(decoded).toEqual(fixtures.dagJws.mutipleSigWLinks)
+      const decoded = signing.decode(fixtures.encodedJws.multipleSig)
+      expect(decoded).toEqual(fixtures.dagJws.multipleSig)
     })
   })
 
-  describe('Encoding', () => {
+  describe('encode', () => {
     it('Encodes dag encoding, one signature', async () => {
       let encoded
       encoded = signing.encode(fixtures.dagJws.oneSig[0])
-      expect(encoded).toEqual(fixtures.generalJws.oneSig[0])
+      expect(encoded).toEqual(fixtures.encodedJws.oneSig[0])
 
       encoded = signing.encode(fixtures.dagJws.oneSig[1])
-      expect(encoded).toEqual(fixtures.generalJws.oneSig[1])
-
-      encoded = signing.encode(fixtures.dagJws.oneSigWLinks[0])
-      expect(encoded).toEqual(fixtures.generalJws.oneSigWLinks[0])
-
-      encoded = signing.encode(fixtures.dagJws.oneSigWLinks[1])
-      expect(encoded).toEqual(fixtures.generalJws.oneSigWLinks[1])
+      expect(encoded).toEqual(fixtures.encodedJws.oneSig[1])
     })
 
     it('Encodes dag encoding, multiple signatures', async () => {
-      let encoded
-      encoded = signing.encode(fixtures.dagJws.mutipleSig)
-      expect(encoded).toEqual(fixtures.generalJws.mutipleSig)
-
-      encoded = signing.encode(fixtures.dagJws.mutipleSigWLinks)
-      expect(encoded).toEqual(fixtures.generalJws.mutipleSigWLinks)
-    })
-
-    it('Encodes general encoding, multiple signatures', async () => {
-      let encoded
-      encoded = signing.encode(fixtures.generalJws.mutipleSig)
-      expect(encoded).toEqual(fixtures.generalJws.mutipleSig)
-
-      encoded = signing.encode(fixtures.generalJws.mutipleSigWLinks)
-      expect(encoded).toEqual(fixtures.generalJws.mutipleSigWLinks)
+      const encoded = signing.encode(fixtures.dagJws.multipleSig)
+      expect(encoded).toEqual(fixtures.encodedJws.multipleSig)
     })
   })
 
-  describe('Verifying', () => {
+  describe('verifyDagJWS', () => {
     it('Verifies single correct signatures', async () => {
       let pubkey
-      pubkey = signing.verify(fixtures.dagJws.oneSig[0], [fixtures.keys[0].pub])
+      pubkey = verifyDagJWS(fixtures.dagJws.oneSig[0], [fixtures.keys[0].pub])
       expect(pubkey).toEqual([fixtures.keys[0].pub])
-      pubkey = signing.verify(fixtures.dagJws.oneSig[1], [fixtures.keys[0].pub])
-      expect(pubkey).toEqual([fixtures.keys[0].pub])
-      pubkey = signing.verify(fixtures.dagJws.oneSigWLinks[0], [fixtures.keys[0].pub])
-      expect(pubkey).toEqual([fixtures.keys[0].pub])
-      pubkey = signing.verify(fixtures.dagJws.oneSigWLinks[1], [fixtures.keys[1].pub])
+      pubkey = verifyDagJWS(fixtures.dagJws.oneSig[1], [fixtures.keys[1].pub])
       expect(pubkey).toEqual([fixtures.keys[1].pub])
     })
 
     it('Verifies multiple correct signatures', async () => {
-      let pubkeys
-      pubkeys = signing.verify(fixtures.dagJws.mutipleSig, [fixtures.keys[0].pub, fixtures.keys[1].pub])
-      expect(pubkeys).toEqual([fixtures.keys[0].pub, fixtures.keys[1].pub])
-      pubkeys = signing.verify(fixtures.dagJws.mutipleSigWLinks, [fixtures.keys[1].pub, fixtures.keys[0].pub])
+      const pubkeys = verifyDagJWS(fixtures.dagJws.multipleSig, [fixtures.keys[0].pub, fixtures.keys[1].pub])
       expect(pubkeys).toEqual([fixtures.keys[0].pub, fixtures.keys[1].pub])
     })
 
     it('Verify throw error with wrong pubkey', async () => {
       let fn
-      fn = (): void => signing.verify(fixtures.dagJws.oneSigWLinks[0], [fixtures.keys[1].pub])
+      fn = (): void => verifyDagJWS(fixtures.dagJws.oneSig[0], [fixtures.keys[1].pub])
       expect(fn).toThrowError(/Signature invalid/)
-      fn = (): void => signing.verify(fixtures.dagJws.mutipleSigWLinks, [fixtures.keys[0].pub])
+      fn = (): void => verifyDagJWS(fixtures.dagJws.multipleSig, [fixtures.keys[0].pub])
       expect(fn).toThrowError(/Signature invalid/)
     })
   })
 
-  describe('Verifying', () => {
-    it('creates with simple payload', async () => {
+  describe('createDagJWS', () => {
+    it('Throws if payload is not a CID', async () => {
+      let notCID = 'foireufhiuh'
+      await expect(createDagJWS(notCID, signer1)).rejects.toThrowError('A CID has to be used as a payload')
+      notCID = { my: 'payload' }
+      await expect(createDagJWS(notCID, signer1)).rejects.toThrowError('A CID has to be used as a payload')
+    })
+
+    it('Creates DagJWS with CID as payload', async () => {
+      const cid = new CID('bafybeig6xv5nwphfmvcnektpnojts33jqcuam7bmye2pb54adnrtccjlsu')
       let dagJws
-      dagJws = await signing.create({ a: 1, b: 2 }, signer1)
+      dagJws = await createDagJWS(cid, signer1)
       expect(dagJws).toEqual(fixtures.dagJws.oneSig[0])
-      // should reorder payload
-      dagJws = await signing.create({ b: 2, a: 1 }, signer1)
-      expect(dagJws).toEqual(fixtures.dagJws.oneSig[0])
-      // should handle links and buffers in payload
-      dagJws = await signing.create({
-        b: new CID('bafybeig6xv5nwphfmvcnektpnojts33jqcuam7bmye2pb54adnrtccjlsu'),
-        a: Buffer.from('11', 'hex')
-      }, signer1)
-      expect(dagJws).toEqual(fixtures.dagJws.oneSigWLinks[0])
+
+      dagJws = await createDagJWS(cid, signer2)
+      expect(dagJws).toEqual(fixtures.dagJws.oneSig[1])
     })
   })
 })

@@ -1,40 +1,41 @@
-import { encodeDagJson, decodeDagJson } from './utils'
+import CID from 'cids'
 import { createJWS, verifyJWS } from 'did-jwt'
 import base64url from 'base64url'
 import stringify from 'fast-json-stable-stringify'
 
-interface GeneralSignature {
+interface JWSSignature {
   header?: Record<string, any>;
   protected?: string;
   signature: string;
 }
 
-interface GeneralJWS {
+export interface DagJWS {
   payload: string;
-  signatures: Array<GeneralSignature>;
+  signatures: Array<JWSSignature>;
+  link?: CID;
 }
 
-interface DagSignature {
+interface EncodedSignature {
   header?: Record<string, any>;
-  protected?: Record<string, any>;
+  protected?: Buffer;
   signature: Buffer;
 }
 
-interface DagJWS {
-  payload: Record<string, any> | Buffer;
-  signatures: Array<DagSignature>;
+export interface EncodedJWS {
+  payload: Buffer;
+  signatures: Array<EncodedSignature>;
 }
 
 interface PublicKey {
   id: string;
   type: string;
-  owner: string;
+  controller: string;
   publicKeyHex?: string;
   publicKeyBase64?: string;
 }
 type Signer = (data: string) => Promise<string>
 
-function fromSplit (split: Array<string>): GeneralJWS {
+function fromSplit (split: Array<string>): DagJWS {
   const [protectedHeader, payload, signature] = split
   return {
     payload,
@@ -42,74 +43,57 @@ function fromSplit (split: Array<string>): GeneralJWS {
   }
 }
 
-function encodeSignature (ds: DagSignature): GeneralSignature {
-  const sign: GeneralSignature = {
-    signature: base64url.encode(ds.signature)
+function encodeSignature (signature: JWSSignature): EncodedSignature {
+  const encoded: EncodedSignature = {
+    signature: base64url.toBuffer(signature.signature)
   }
-  if (ds.header) sign.header = encodeDagJson(ds.header)
-  if (ds.protected) sign.protected = base64url.encode(JSON.stringify(encodeDagJson(ds.protected)))
+  if (signature.header) encoded.header = signature.header
+  if (signature.protected) encoded.protected = base64url.toBuffer(signature.protected)
+  return encoded
+}
+
+function encode (jws: DagJWS): EncodedJWS {
+  const encodedJws: EncodedJWS = {
+    payload: base64url.toBuffer(jws.payload),
+    signatures: jws.signatures.map(encodeSignature),
+  }
+  return encodedJws
+}
+
+function decodeSignature (encoded: EncodedSignature): JWSSignature {
+  const sign: JWSSignature = {
+    signature: base64url.encode(encoded.signature)
+  }
+  if (encoded.header) sign.header = encoded.header
+  if (encoded.protected) sign.protected = base64url.encode(encoded.protected)
   return sign
 }
 
-function isGeneralJWS(jws: DagJWS | GeneralJWS): jws is GeneralJWS {
-  return typeof jws.payload === 'string'
-}
-
-function encode (jws: DagJWS | GeneralJWS): GeneralJWS {
-  if (isGeneralJWS(jws)) { // General format already
-    return Object.assign({}, jws)
-  } else {
-    const generalJws: GeneralJWS = {
-      signatures: jws.signatures.map(encodeSignature),
-      payload: null
-    }
-    if (Buffer.isBuffer(jws.payload)) {
-      generalJws.payload = base64url.encode(jws.payload)
-    } else {
-      generalJws.payload = base64url.encode(JSON.stringify(encodeDagJson(jws.payload)))
-    }
-    return generalJws
-  }
-}
-
-function decodeSignature (parsed: GeneralSignature): DagSignature {
-  const sign: DagSignature = {
-    signature: Buffer.from(parsed.signature, 'base64')
-  }
-  if (parsed.header) sign.header = decodeDagJson(parsed.header)
-  if (parsed.protected) sign.protected = decodeDagJson(JSON.parse(Buffer.from(parsed.protected, 'base64').toString()))
-  return sign
-}
-
-function decode (parsed: GeneralJWS): DagJWS {
+function decode (encoded: EncodedJWS): DagJWS {
   const decoded: DagJWS = {
-    payload: Buffer.from(parsed.payload, 'base64'),
-    signatures: parsed.signatures.map(decodeSignature)
+    payload: base64url.encode(encoded.payload),
+    signatures: encoded.signatures.map(decodeSignature)
   }
-  try {
-    decoded.payload = decodeDagJson(JSON.parse(decoded.payload.toString()))
-  } catch (e) {
-    // return payload as buffer if it isn't json
-  }
+  decoded.link = new CID(new Uint8Array(encoded.payload))
   return decoded
 }
 
-async function create (payload: Record<string, any>, signer: Signer, protectedHeader: Record<string, any>): Promise<DagJWS> {
+export async function createDagJWS (cid: CID, signer: Signer, protectedHeader: Record<string, any>): Promise<DagJWS> {
   // TODO - this function only supports single signature for now
-  // non ideal way to sort for now
-  payload = JSON.parse(stringify(encodeDagJson(payload)))
-  if (protectedHeader) protectedHeader = JSON.parse(stringify(encodeDagJson(protectedHeader)))
+  if (!CID.isCID(cid)) throw new Error('A CID has to be used as a payload')
+  const payload = base64url.encode(cid.bytes as Buffer)
+  if (protectedHeader) protectedHeader = JSON.parse(stringify(protectedHeader))
   const jws = await createJWS(payload, signer, protectedHeader)
-  const generalJws = fromSplit(jws.split('.'))
-  return decode(generalJws)
+  const dagJws = fromSplit(jws.split('.'))
+  dagJws.link = cid
+  return dagJws
 }
 
-function verify (jws: DagJWS, publicKeys: PublicKey[]): PublicKey[] {
-  // TODO - this function should use multikeys
-  const generalJws = encode(jws)
+export function verifyDagJWS (jws: DagJWS, publicKeys: PublicKey[]): PublicKey[] {
+  // TODO - this function should probably use multikeys
   const pubkeys = []
-  for (const signObj of generalJws.signatures) {
-    const jwsString = `${signObj.protected}.${generalJws.payload}.${signObj.signature}`
+  for (const signObj of jws.signatures) {
+    const jwsString = `${signObj.protected}.${jws.payload}.${signObj.signature}`
     pubkeys.push(verifyJWS(jwsString, publicKeys))
   }
   return pubkeys
@@ -119,10 +103,4 @@ export default {
   fromSplit,
   encode,
   decode,
-  create,
-  verify
-}
-export {
-  GeneralJWS,
-  DagJWS
 }

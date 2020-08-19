@@ -20,10 +20,7 @@ const format = legacy(multiformats, dagJose.name)
 const ipfs = await Ipfs.create({ ipld: { formats: [format] } })
 
 // sign object
-const payload = {
-  such: 'data',
-  very: new CID('bagcqcera73rupyla6bauseyk75rslfys3st25spm75ykhvgusqvv2zfqtucq')
-}
+const payload = new CID('bagcqcera73rupyla6bauseyk75rslfys3st25spm75ykhvgusqvv2zfqtucq')
 const privkey = // hex private key
 signer = new EllipticSigner(privkey)
 

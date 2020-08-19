@@ -1,15 +1,15 @@
-import signing, { GeneralJWS, DagJWS } from './signing'
-export type { DagJWS, GeneralJWS } from './signing'
-import encryption, { GeneralJWE, DagJWE } from './encryption'
-export type { DagJWE, GeneralJWE } from './encryption'
-import stringify from 'fast-json-stable-stringify'
+import signing, { DagJWS, EncodedJWS, createDagJWS, verifyDagJWS } from './signing'
+export type { DagJWS } from './signing'
+import encryption, { DagJWE, EncodedJWE, createDagJWE, decryptDagJWE } from './encryption'
+export type { DagJWE } from './encryption'
+import cbor from 'borc'
 
-function stringToJose (jose: string): GeneralJWS | GeneralJWE {
+function stringToJose (jose: string): EncodedJWS | EncodedJWE {
   const split = jose.split('.')
   if (split.length === 3) {
-    return signing.fromSplit(split)
+    return signing.encode(signing.fromSplit(split))
   } else if (split.length === 5) {
-    return encryption.fromSplit(split)
+    return encryption.encode(encryption.fromSplit(split))
   } else {
     throw new Error('Not a valid JOSE string')
   }
@@ -21,36 +21,41 @@ const name = 'dag-jose'
 // integer for the multiformat entry of the codec
 const code = 133 // 0x85 https://github.com/multiformats/multicodec/blob/master/table.csv
 
-function isJWS(jose: GeneralJWS | GeneralJWE | DagJWS | DagJWE): jose is GeneralJWS | DagJWS {
+function isJWS(jose: DagJWS | DagJWE | EncodedJWS | EncodedJWE): jose is DagJWS | EncodedJWS {
   return 'payload' in jose
 }
 
-function isJWE(jose: GeneralJWS | GeneralJWE | DagJWS | DagJWE): jose is GeneralJWE | DagJWE {
+function isJWE(jose: DagJWS | DagJWE | EncodedJWS | EncodedJWE): jose is DagJWE | EncodedJWE {
   return 'ciphertext' in jose
 }
 
-function encode (obj: GeneralJWS | GeneralJWE | DagJWS | DagJWE | string): Buffer {
-  let generalJose
+function encode (obj: DagJWS | DagJWE | string): Buffer {
+  let encodedJose
   if (typeof obj === 'string') {
-    generalJose = stringToJose(obj)
+    encodedJose = stringToJose(obj)
   } else if (isJWS(obj)) {
-    generalJose = signing.encode(obj)
+    encodedJose = signing.encode(obj)
   } else if (isJWE(obj)) {
-    generalJose = encryption.encode(obj)
+    encodedJose = encryption.encode(obj)
   } else {
     throw new Error('Not a valid JOSE object')
   }
-  return Buffer.from(stringify(generalJose))
+  return cbor.encode(encodedJose)
 }
 
 function decode (data: Buffer): DagJWS | DagJWE {
   // ipld gives us an Uint8Array instead of buffer
   if (data instanceof Uint8Array) data = Buffer.from(data)
-  const parsed: GeneralJWS | GeneralJWE = JSON.parse(data.toString())
-  if (isJWS(parsed)) {
-    return signing.decode(parsed)
-  } else if (isJWE(parsed)) {
-    return encryption.decode(parsed)
+  let encoded: EncodedJWS | EncodedJWE
+  try {
+    encoded = cbor.decode(data)
+  } catch (e) {
+    throw new Error('Not a valid DAG-JOSE object')
+  }
+  if (isJWS(encoded)) {
+    return signing.decode(encoded)
+  } else if (isJWE(encoded)) {
+    return encryption.decode(encoded)
   } else {
     throw new Error('Not a valid DAG-JOSE object')
   }
@@ -63,6 +68,8 @@ export default {
   decode
 }
 export {
-  signing,
-  encryption
+  createDagJWS,
+  verifyDagJWS,
+  createDagJWE,
+  decryptDagJWE,
 }
