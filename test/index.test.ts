@@ -1,5 +1,6 @@
 import dagJose, { createDagJWS } from '../src/index'
 import sFixtures from './__fixtures__/signing.fixtures'
+import eFixtures from './__fixtures__/encryption.fixtures'
 // TODO - multiformats imports not working, ignoring for now.
 //import multiformats from 'multiformats'
 //import legacy from 'multiformats/legacy.js'
@@ -58,26 +59,38 @@ describe('dag-jose codec', () => {
     })
   })
 
-  describe.skip('DagJWE', () => {
-    it('Encode string', async () => {
-      // TODO
+  describe('DagJWE', () => {
+    it('Encode compact jwe', () => {
+      const encoded = dagJose.encode(eFixtures.compact)
+      expect(encoded).toEqual(eFixtures.blockEncoded.oneRecip[0])
     })
 
-    it('Encode general', async () => {
-      // TODO
+    it('Encode general jwe', () => {
+      let encoded = dagJose.encode(eFixtures.dagJwe.oneRecip[0])
+      expect(encoded).toEqual(eFixtures.blockEncoded.oneRecip[0])
+
+      encoded = dagJose.encode(eFixtures.dagJwe.oneRecip[1])
+      expect(encoded).toEqual(eFixtures.blockEncoded.oneRecip[1])
+
+      encoded = dagJose.encode(eFixtures.dagJwe.multipleRecip)
+      expect(encoded).toEqual(eFixtures.blockEncoded.multipleRecip)
     })
 
-    it('Encode dagJose', async () => {
-      // TODO
+    it('Decode Buffer', () => {
+      let decoded
+      decoded = dagJose.decode(eFixtures.blockEncoded.oneRecip[0])
+      expect(decoded).toEqual(eFixtures.dagJwe.oneRecip[0])
+
+      decoded = dagJose.decode(eFixtures.blockEncoded.multipleRecip)
+      expect(decoded).toEqual(eFixtures.dagJwe.multipleRecip)
     })
 
-    it('Decode Buffer', async () => {
-      // test with Uint8Array and Buffer
-      //console.log('asdf')
-    })
-
-    it('Decode Uint8Array', async () => {
-      // TODO
+    it('Decode Uint8Array', () => {
+      let decoded
+      decoded = dagJose.decode(new Uint8Array(eFixtures.blockEncoded.oneRecip[1]))
+      expect(decoded).toEqual(eFixtures.dagJwe.oneRecip[1])
+      decoded = dagJose.decode(new Uint8Array(eFixtures.blockEncoded.multipleRecip))
+      expect(decoded).toEqual(eFixtures.dagJwe.multipleRecip)
     })
   })
 
