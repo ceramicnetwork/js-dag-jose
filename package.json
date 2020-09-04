@@ -22,7 +22,7 @@
     "dag"
   ],
   "author": "Joel Thorstensson <oed@3box.io>",
-  "license": "MIT",
+  "license": "(Apache-2.0 OR MIT)",
   "bugs": {
     "url": "https://github.com/ceramicnetwork/js-ipld-dag-jose/issues"
   },
