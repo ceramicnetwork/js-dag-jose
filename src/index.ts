@@ -29,7 +29,7 @@ function isJWE(jose: DagJWS | DagJWE | EncodedJWS | EncodedJWE): jose is DagJWE 
   return 'ciphertext' in jose
 }
 
-function encode(obj: DagJWS | DagJWE | string): Buffer {
+function encode(obj: DagJWS | DagJWE | string): Uint8Array {
   let encodedJose
   if (typeof obj === 'string') {
     encodedJose = stringToJose(obj)
@@ -40,12 +40,10 @@ function encode(obj: DagJWS | DagJWE | string): Buffer {
   } else {
     throw new Error('Not a valid JOSE object')
   }
-  return cbor.encode(encodedJose)
+  return new Uint8Array(cbor.encode(encodedJose))
 }
 
-function decode(data: Buffer): DagJWS | DagJWE {
-  // ipld gives us an Uint8Array instead of buffer
-  if (data instanceof Uint8Array) data = Buffer.from(data)
+function decode(data: Uint8Array): DagJWS | DagJWE {
   let encoded: EncodedJWS | EncodedJWE
   try {
     encoded = cbor.decode(data)

@@ -1,6 +1,6 @@
+import { fromBase64url, toBase64url } from './utils'
 import CID from 'cids'
 import { Signer, createJWS, verifyJWS } from 'did-jwt'
-import base64url from 'base64url'
 import stringify from 'fast-json-stable-stringify'
 
 interface JWSSignature {
@@ -17,12 +17,12 @@ export interface DagJWS {
 
 interface EncodedSignature {
   header?: Record<string, any>
-  protected?: Buffer
-  signature: Buffer
+  protected?: Uint8Array
+  signature: Uint8Array
 }
 
 export interface EncodedJWS {
-  payload: Buffer
+  payload: Uint8Array
   signatures: Array<EncodedSignature>
 }
 
@@ -44,15 +44,15 @@ function fromSplit(split: Array<string>): DagJWS {
 
 function encodeSignature(signature: JWSSignature): EncodedSignature {
   const encoded: EncodedSignature = {
-    signature: base64url.toBuffer(signature.signature),
+    signature: fromBase64url(signature.signature),
   }
   if (signature.header) encoded.header = signature.header
-  if (signature.protected) encoded.protected = base64url.toBuffer(signature.protected)
+  if (signature.protected) encoded.protected = fromBase64url(signature.protected)
   return encoded
 }
 
 function encode(jws: DagJWS): EncodedJWS {
-  const payload = base64url.toBuffer(jws.payload)
+  const payload = fromBase64url(jws.payload)
   try {
     new CID(payload)
   } catch (e) {
@@ -67,16 +67,16 @@ function encode(jws: DagJWS): EncodedJWS {
 
 function decodeSignature(encoded: EncodedSignature): JWSSignature {
   const sign: JWSSignature = {
-    signature: base64url.encode(encoded.signature),
+    signature: toBase64url(encoded.signature),
   }
   if (encoded.header) sign.header = encoded.header
-  if (encoded.protected) sign.protected = base64url.encode(encoded.protected)
+  if (encoded.protected) sign.protected = toBase64url(encoded.protected)
   return sign
 }
 
 function decode(encoded: EncodedJWS): DagJWS {
   const decoded: DagJWS = {
-    payload: base64url.encode(encoded.payload),
+    payload: toBase64url(encoded.payload),
     signatures: encoded.signatures.map(decodeSignature),
   }
   decoded.link = new CID(new Uint8Array(encoded.payload))
@@ -90,7 +90,7 @@ export async function createDagJWS(
 ): Promise<DagJWS> {
   // TODO - this function only supports single signature for now
   if (!CID.isCID(cid)) throw new Error('A CID has to be used as a payload')
-  const payload = base64url.encode(cid.bytes as Buffer)
+  const payload = toBase64url(cid.bytes)
   if (protectedHeader) protectedHeader = JSON.parse(stringify(protectedHeader))
   const jws = await createJWS(payload, signer, protectedHeader)
   const dagJws = fromSplit(jws.split('.'))
