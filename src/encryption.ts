@@ -1,4 +1,4 @@
-import base64url from 'base64url'
+import { fromBase64url, toBase64url } from './utils'
 
 interface JWERecipient {
   encrypted_key?: string // eslint-disable-line @typescript-eslint/camelcase
@@ -16,17 +16,17 @@ export interface DagJWE {
 }
 
 interface EncodedRecipient {
-  encrypted_key?: Buffer // eslint-disable-line @typescript-eslint/camelcase
+  encrypted_key?: Uint8Array // eslint-disable-line @typescript-eslint/camelcase
   header?: Record<string, any>
 }
 
 export interface EncodedJWE {
-  aad?: Buffer
-  ciphertext: Buffer
-  iv?: Buffer
-  protected?: Buffer
+  aad?: Uint8Array
+  ciphertext: Uint8Array
+  iv?: Uint8Array
+  protected?: Uint8Array
   recipients: Array<EncodedRecipient>
-  tag?: Buffer
+  tag?: Uint8Array
   unprotected?: Record<string, any>
 }
 
@@ -46,40 +46,40 @@ function fromSplit(split: Array<string>): DagJWE {
 
 function encodeRecipient(recipient: JWERecipient): EncodedRecipient {
   const encRec: EncodedRecipient = {}
-  if (recipient.encrypted_key) encRec.encrypted_key = base64url.toBuffer(recipient.encrypted_key) // eslint-disable-line @typescript-eslint/camelcase
+  if (recipient.encrypted_key) encRec.encrypted_key = fromBase64url(recipient.encrypted_key) // eslint-disable-line @typescript-eslint/camelcase
   if (recipient.header) encRec.header = recipient.header
   return encRec
 }
 
 function encode(jwe: DagJWE): EncodedJWE {
   const encJwe: EncodedJWE = {
-    ciphertext: base64url.toBuffer(jwe.ciphertext),
+    ciphertext: fromBase64url(jwe.ciphertext),
     recipients: jwe.recipients.map(encodeRecipient),
   }
-  if (jwe.aad) encJwe.aad = base64url.toBuffer(jwe.aad)
-  if (jwe.iv) encJwe.iv = base64url.toBuffer(jwe.iv)
-  if (jwe.protected) encJwe.protected = base64url.toBuffer(jwe.protected)
-  if (jwe.tag) encJwe.tag = base64url.toBuffer(jwe.tag)
+  if (jwe.aad) encJwe.aad = fromBase64url(jwe.aad)
+  if (jwe.iv) encJwe.iv = fromBase64url(jwe.iv)
+  if (jwe.protected) encJwe.protected = fromBase64url(jwe.protected)
+  if (jwe.tag) encJwe.tag = fromBase64url(jwe.tag)
   if (jwe.unprotected) encJwe.unprotected = jwe.unprotected
   return encJwe
 }
 
 function decodeRecipient(encoded: EncodedRecipient): JWERecipient {
   const recipient: JWERecipient = {}
-  if (encoded.encrypted_key) recipient.encrypted_key = base64url.encode(encoded.encrypted_key) // eslint-disable-line @typescript-eslint/camelcase
+  if (encoded.encrypted_key) recipient.encrypted_key = toBase64url(encoded.encrypted_key) // eslint-disable-line @typescript-eslint/camelcase
   if (encoded.header) recipient.header = encoded.header
   return recipient
 }
 
 function decode(encoded: EncodedJWE): DagJWE {
   const jwe: DagJWE = {
-    ciphertext: base64url.encode(encoded.ciphertext),
+    ciphertext: toBase64url(encoded.ciphertext),
     recipients: encoded.recipients.map(decodeRecipient),
   }
-  if (encoded.aad) jwe.aad = base64url.encode(encoded.aad)
-  if (encoded.iv) jwe.iv = base64url.encode(encoded.iv)
-  if (encoded.protected) jwe.protected = base64url.encode(encoded.protected)
-  if (encoded.tag) jwe.tag = base64url.encode(encoded.tag)
+  if (encoded.aad) jwe.aad = toBase64url(encoded.aad)
+  if (encoded.iv) jwe.iv = toBase64url(encoded.iv)
+  if (encoded.protected) jwe.protected = toBase64url(encoded.protected)
+  if (encoded.tag) jwe.tag = toBase64url(encoded.tag)
   if (encoded.unprotected) jwe.unprotected = encoded.unprotected
   return jwe
 }

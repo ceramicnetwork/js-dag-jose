@@ -1,6 +1,7 @@
 import signing, { createDagJWS, verifyDagJWS } from '../src/signing'
+import { fromBase64url, toBase64url } from '../src/utils'
 import fixtures from './__fixtures__/signing.fixtures'
-import base64url from 'base64url'
+import * as u8a from 'uint8arrays'
 import CID from 'cids'
 import { EllipticSigner } from 'did-jwt'
 
@@ -51,7 +52,7 @@ describe('Signing support', () => {
     })
 
     it('Throws if payload is not a CID', async () => {
-      const payload = base64url.encode(JSON.stringify({ json: 'payload' }))
+      const payload = toBase64url(u8a.fromString(JSON.stringify({ json: 'payload' })))
       const notDagJws = Object.assign({}, fixtures.dagJws.oneSig[0], { payload })
       expect(() => signing.encode(notDagJws)).toThrow('Not a valid DagJWS')
     })

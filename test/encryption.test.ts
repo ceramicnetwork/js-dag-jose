@@ -1,6 +1,5 @@
 import encryption, { createDagJWE, decryptDagJWE } from '../src/encryption'
 import fixtures from './__fixtures__/encryption.fixtures'
-import base64url from 'base64url'
 //import CID from 'cids'
 //import { EllipticSigner } from 'did-jwt'
 
