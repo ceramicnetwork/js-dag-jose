@@ -10,6 +10,8 @@ In addition to support for encoding and decoding dag-jose ipld format, this libr
 
 
 ## Usage
+
+### JWS
 ```js
 import dagJose from 'dag-jose'
 import multiformats from 'multiformats/basics.js'

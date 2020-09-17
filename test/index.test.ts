@@ -1,3 +1,4 @@
+import * as u8a from 'uint8arrays'
 import dagJose, { createDagJWS } from '../src/index'
 import sFixtures from './__fixtures__/signing.fixtures'
 import eFixtures from './__fixtures__/encryption.fixtures'
@@ -27,20 +28,12 @@ describe('dag-jose codec', () => {
       expect(encoded).toEqual(sFixtures.blockEncoded.multipleSig)
     })
 
-    it('Decode Buffer', () => {
+    it('Decode bytes', () => {
       let decoded
       decoded = dagJose.decode(sFixtures.blockEncoded.oneSig[0])
       expect(decoded).toEqual(sFixtures.dagJws.oneSig[0])
 
       decoded = dagJose.decode(sFixtures.blockEncoded.multipleSig)
-      expect(decoded).toEqual(sFixtures.dagJws.multipleSig)
-    })
-
-    it('Decode Uint8Array', () => {
-      let decoded
-      decoded = dagJose.decode(new Uint8Array(sFixtures.blockEncoded.oneSig[1]))
-      expect(decoded).toEqual(sFixtures.dagJws.oneSig[1])
-      decoded = dagJose.decode(new Uint8Array(sFixtures.blockEncoded.multipleSig))
       expect(decoded).toEqual(sFixtures.dagJws.multipleSig)
     })
 
@@ -62,34 +55,29 @@ describe('dag-jose codec', () => {
   describe('DagJWE', () => {
     it('Encode compact jwe', () => {
       const encoded = dagJose.encode(eFixtures.compact)
-      expect(encoded).toEqual(eFixtures.blockEncoded.oneRecip[0])
+      expect(encoded).toEqual(eFixtures.blockEncoded.dir)
     })
 
     it('Encode general jwe', () => {
-      let encoded = dagJose.encode(eFixtures.dagJwe.oneRecip[0])
-      expect(encoded).toEqual(eFixtures.blockEncoded.oneRecip[0])
+      let encoded = dagJose.encode(eFixtures.dagJwe.dir)
+      expect(encoded).toEqual(eFixtures.blockEncoded.dir)
 
-      encoded = dagJose.encode(eFixtures.dagJwe.oneRecip[1])
-      expect(encoded).toEqual(eFixtures.blockEncoded.oneRecip[1])
+      encoded = dagJose.encode(eFixtures.dagJwe.oneRecip)
+      expect(encoded).toEqual(eFixtures.blockEncoded.oneRecip)
 
       encoded = dagJose.encode(eFixtures.dagJwe.multipleRecip)
       expect(encoded).toEqual(eFixtures.blockEncoded.multipleRecip)
     })
 
-    it('Decode Buffer', () => {
+    it('Decode bytes', () => {
       let decoded
-      decoded = dagJose.decode(eFixtures.blockEncoded.oneRecip[0])
-      expect(decoded).toEqual(eFixtures.dagJwe.oneRecip[0])
+      decoded = dagJose.decode(eFixtures.blockEncoded.dir)
+      expect(decoded).toEqual(eFixtures.dagJwe.dir)
+
+      decoded = dagJose.decode(eFixtures.blockEncoded.oneRecip)
+      expect(decoded).toEqual(eFixtures.dagJwe.oneRecip)
 
       decoded = dagJose.decode(eFixtures.blockEncoded.multipleRecip)
-      expect(decoded).toEqual(eFixtures.dagJwe.multipleRecip)
-    })
-
-    it('Decode Uint8Array', () => {
-      let decoded
-      decoded = dagJose.decode(new Uint8Array(eFixtures.blockEncoded.oneRecip[1]))
-      expect(decoded).toEqual(eFixtures.dagJwe.oneRecip[1])
-      decoded = dagJose.decode(new Uint8Array(eFixtures.blockEncoded.multipleRecip))
       expect(decoded).toEqual(eFixtures.dagJwe.multipleRecip)
     })
   })

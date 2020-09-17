@@ -1,4 +1,6 @@
 import { fromBase64url, toBase64url } from './utils'
+import CID from 'cids'
+import { createJWE, decryptJWE, Encrypter, Decrypter } from 'did-jwt'
 
 interface JWERecipient {
   encrypted_key?: string // eslint-disable-line @typescript-eslint/camelcase
@@ -8,10 +10,10 @@ interface JWERecipient {
 export interface DagJWE {
   aad?: string
   ciphertext: string
-  iv?: string
-  protected?: string
-  recipients: Array<JWERecipient>
-  tag?: string
+  iv: string
+  protected: string
+  recipients?: Array<JWERecipient>
+  tag: string
   unprotected?: Record<string, any>
 }
 
@@ -23,25 +25,23 @@ interface EncodedRecipient {
 export interface EncodedJWE {
   aad?: Uint8Array
   ciphertext: Uint8Array
-  iv?: Uint8Array
-  protected?: Uint8Array
-  recipients: Array<EncodedRecipient>
-  tag?: Uint8Array
+  iv: Uint8Array
+  protected: Uint8Array
+  recipients?: Array<EncodedRecipient>
+  tag: Uint8Array
   unprotected?: Record<string, any>
 }
 
-type Encrypter = (data: string) => any // TODO - stricter types
-type Decrypter = (data: string) => any // TODO - stricter types
-
 function fromSplit(split: Array<string>): DagJWE {
   const [protectedHeader, encrypted_key, iv, ciphertext, tag] = split // eslint-disable-line @typescript-eslint/camelcase
-  return {
+  const jwe: DagJWE = {
     ciphertext,
     iv,
     protected: protectedHeader,
-    recipients: [{ encrypted_key }], // eslint-disable-line @typescript-eslint/camelcase
     tag,
   }
+  if (encrypted_key) jwe.recipients = [{ encrypted_key }] // eslint-disable-line @typescript-eslint/camelcase
+  return jwe
 }
 
 function encodeRecipient(recipient: JWERecipient): EncodedRecipient {
@@ -54,12 +54,12 @@ function encodeRecipient(recipient: JWERecipient): EncodedRecipient {
 function encode(jwe: DagJWE): EncodedJWE {
   const encJwe: EncodedJWE = {
     ciphertext: fromBase64url(jwe.ciphertext),
-    recipients: jwe.recipients.map(encodeRecipient),
+    protected: fromBase64url(jwe.protected),
+    iv: fromBase64url(jwe.iv),
+    tag: fromBase64url(jwe.tag),
   }
   if (jwe.aad) encJwe.aad = fromBase64url(jwe.aad)
-  if (jwe.iv) encJwe.iv = fromBase64url(jwe.iv)
-  if (jwe.protected) encJwe.protected = fromBase64url(jwe.protected)
-  if (jwe.tag) encJwe.tag = fromBase64url(jwe.tag)
+  if (jwe.recipients) encJwe.recipients = jwe.recipients.map(encodeRecipient)
   if (jwe.unprotected) encJwe.unprotected = jwe.unprotected
   return encJwe
 }
@@ -74,27 +74,30 @@ function decodeRecipient(encoded: EncodedRecipient): JWERecipient {
 function decode(encoded: EncodedJWE): DagJWE {
   const jwe: DagJWE = {
     ciphertext: toBase64url(encoded.ciphertext),
-    recipients: encoded.recipients.map(decodeRecipient),
+    protected: toBase64url(encoded.protected),
+    iv: toBase64url(encoded.iv),
+    tag: toBase64url(encoded.tag),
   }
   if (encoded.aad) jwe.aad = toBase64url(encoded.aad)
-  if (encoded.iv) jwe.iv = toBase64url(encoded.iv)
-  if (encoded.protected) jwe.protected = toBase64url(encoded.protected)
-  if (encoded.tag) jwe.tag = toBase64url(encoded.tag)
+  if (encoded.recipients) jwe.recipients = encoded.recipients.map(decodeRecipient)
   if (encoded.unprotected) jwe.unprotected = encoded.unprotected
   return jwe
 }
 
-/*eslint-disable */
-export async function createDagJWE(payload: any, header: any, encrypt: Encrypter): Promise<DagJWE> {
-  throw new Error('Not implemented')
-  // TODO - Implement JWE creation with x25519 + xchacha20-poly1305
+export async function createDagJWE(
+  cid: CID,
+  encrypters: Array<Encrypter>,
+  header?: Record<string, any>,
+  aad?: Uint8Array
+): Promise<DagJWE> {
+  if (!CID.isCID(cid)) throw new Error('A CID has to be used as a payload')
+  return createJWE(cid.bytes, encrypters, header, aad)
 }
 
-export async function decryptDagJWE(node: DagJWE, decrypt: Decrypter): Promise<any> {
-  throw new Error('Not implemented')
-  // TODO - Implement JWE decryption
+export async function decryptDagJWE(jwe: DagJWE, decrypter: Decrypter): Promise<CID> {
+  const cidBytes = await decryptJWE(jwe, decrypter)
+  return new CID(cidBytes)
 }
-/*eslint-enable */
 
 export default {
   fromSplit,
