@@ -95,7 +95,7 @@ export async function createDagJWE(
 }
 
 export async function decryptDagJWE(jwe: DagJWE, decrypter: Decrypter): Promise<CID> {
-  const cidBytes = await decryptJWE(jwe, decrypter)
+  const cidBytes = await decryptJWE(jwe as any, decrypter)
   return new CID(cidBytes)
 }
 
