@@ -47,9 +47,10 @@
     "typescript": "^3.8.3"
   },
   "dependencies": {
+    "@stablelib/x25519": "^1.0.0",
     "borc": "^2.1.2",
     "cids": "^1.0.0",
-    "did-jwt": "^4.5.0",
+    "did-jwt": "git+https://github.com/oed/did-jwt.git#feat/jwe",
     "fast-json-stable-stringify": "^2.1.0",
     "uint8arrays": "^1.1.0"
   },

@@ -1,31 +1,44 @@
 import encryption, { createDagJWE, decryptDagJWE } from '../src/encryption'
 import fixtures from './__fixtures__/encryption.fixtures'
-//import CID from 'cids'
-//import { EllipticSigner } from 'did-jwt'
+import CID from 'cids'
+import {
+  xc20pDirEncrypter,
+  xc20pDirDecrypter,
+  x25519Encrypter,
+  x25519Decrypter,
+} from 'did-jwt'
+import { generateKeyPairFromSeed } from '@stablelib/x25519'
 
 describe('Encryption support', () => {
-  //let signer1, signer2
+  let encrypter1, encrypter2, encrypter3
+  let decrypter1, decrypter2, decrypter3
 
   beforeAll(() => {
-    //signer1 = new EllipticSigner(fixtures.keys[0].priv)
-    //signer2 = new EllipticSigner(fixtures.keys[1].priv)
+    encrypter1 = xc20pDirEncrypter(fixtures.keys[0])
+    decrypter1 = xc20pDirDecrypter(fixtures.keys[0])
+    const pubKey2 = generateKeyPairFromSeed(fixtures.keys[1]).publicKey
+    const pubKey3 = generateKeyPairFromSeed(fixtures.keys[2]).publicKey
+    encrypter2 = x25519Encrypter(pubKey2)
+    encrypter3 = x25519Encrypter(pubKey3)
+    decrypter2 = x25519Decrypter(fixtures.keys[1])
+    decrypter3 = x25519Decrypter(fixtures.keys[2])
   })
 
   describe('fromSplit', () => {
     it('Converts split jwe to a general jws', () => {
       const compact = fixtures.compact
-      expect(encryption.fromSplit(compact.split('.'))).toEqual(fixtures.general)
+      expect(encryption.fromSplit(compact.split('.'))).toEqual(fixtures.dagJwe.dir)
     })
   })
 
   describe('decode', () => {
     it('Decodes general encoding, one recipient', () => {
       let decoded
-      decoded = encryption.decode(fixtures.encodedJwe.oneRecip[0])
-      expect(decoded).toEqual(fixtures.dagJwe.oneRecip[0])
+      decoded = encryption.decode(fixtures.encodedJwe.dir)
+      expect(decoded).toEqual(fixtures.dagJwe.dir)
 
-      decoded = encryption.decode(fixtures.encodedJwe.oneRecip[1])
-      expect(decoded).toEqual(fixtures.dagJwe.oneRecip[1])
+      decoded = encryption.decode(fixtures.encodedJwe.oneRecip)
+      expect(decoded).toEqual(fixtures.dagJwe.oneRecip)
     })
 
     it('Decodes general encoding, multiple recipients', () => {
@@ -37,11 +50,11 @@ describe('Encryption support', () => {
   describe('encode', () => {
     it('Encodes dag encoding, one recipient', () => {
       let encoded
-      encoded = encryption.encode(fixtures.dagJwe.oneRecip[0])
-      expect(encoded).toEqual(fixtures.encodedJwe.oneRecip[0])
+      encoded = encryption.encode(fixtures.dagJwe.dir)
+      expect(encoded).toEqual(fixtures.encodedJwe.dir)
 
-      encoded = encryption.encode(fixtures.dagJwe.oneRecip[1])
-      expect(encoded).toEqual(fixtures.encodedJwe.oneRecip[1])
+      encoded = encryption.encode(fixtures.dagJwe.oneRecip)
+      expect(encoded).toEqual(fixtures.encodedJwe.oneRecip)
     })
 
     it('Encodes dag encoding, multiple recipients', () => {
@@ -50,9 +63,47 @@ describe('Encryption support', () => {
     })
   })
 
-  describe.skip('decryptDagJWE', () => {
-  })
+  describe('createDagJWE and decryptDagJWE', () => {
+    const cleartextCID = new CID('bafybeig6xv5nwphfmvcnektpnojts33jqcuam7bmye2pb54adnrtccjlsu')
+    it('Throws if payload is not a CID', async () => {
+      const msg = 'A CID has to be used as a payload'
+      let notCID = 'foireufhiuh'
+      await expect(createDagJWE(notCID, [encrypter1])).rejects.toThrowError(msg)
+      notCID = { my: 'payload' }
+      await expect(createDagJWE(notCID, [encrypter1])).rejects.toThrowError(msg)
+    })
 
-  describe.skip('createDagJWE', () => {
+    it('Creates DagJWE and decrypts it with direct encryption', async () => {
+      const jwe = await createDagJWE(cleartextCID, [encrypter1])
+      expect(jwe.protected).toBeDefined()
+      expect(jwe.iv).toBeDefined()
+      expect(jwe.tag).toBeDefined()
+      expect(jwe.ciphertext).toBeDefined()
+      expect(jwe.recipients).toBeUndefined()
+      expect(await decryptDagJWE(jwe, decrypter1)).toEqual(cleartextCID)
+    })
+
+    it('Creates DagJWE and decrypts it with asymmetric encryption', async () => {
+      const jwe = await createDagJWE(cleartextCID, [encrypter2])
+      expect(jwe.protected).toBeDefined()
+      expect(jwe.iv).toBeDefined()
+      expect(jwe.tag).toBeDefined()
+      expect(jwe.ciphertext).toBeDefined()
+      expect(jwe.recipients).toBeDefined()
+      expect(jwe.recipients.length).toEqual(1)
+      expect(await decryptDagJWE(jwe, decrypter2)).toEqual(cleartextCID)
+    })
+
+    it('Creates DagJWE and decrypts it with asymmetric encryption (multiple recipients)', async () => {
+      const jwe = await createDagJWE(cleartextCID, [encrypter2, encrypter3])
+      expect(jwe.protected).toBeDefined()
+      expect(jwe.iv).toBeDefined()
+      expect(jwe.tag).toBeDefined()
+      expect(jwe.ciphertext).toBeDefined()
+      expect(jwe.recipients).toBeDefined()
+      expect(jwe.recipients.length).toEqual(2)
+      expect(await decryptDagJWE(jwe, decrypter2)).toEqual(cleartextCID)
+      expect(await decryptDagJWE(jwe, decrypter3)).toEqual(cleartextCID)
+    })
   })
 })
