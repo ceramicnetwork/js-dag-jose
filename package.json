@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ceramicnetwork/js-ipld-dag-jose.git"
+    "url": "git+https://github.com/ceramicnetwork/js-dag-jose.git"
   },
   "keywords": [
     "ipld",
@@ -24,9 +24,9 @@
   "author": "Joel Thorstensson <oed@3box.io>",
   "license": "(Apache-2.0 OR MIT)",
   "bugs": {
-    "url": "https://github.com/ceramicnetwork/js-ipld-dag-jose/issues"
+    "url": "https://github.com/ceramicnetwork/js-dag-jose/issues"
   },
-  "homepage": "https://github.com/ceramicnetwork/js-ipld-dag-jose#readme",
+  "homepage": "https://github.com/ceramicnetwork/js-dag-jose#readme",
   "devDependencies": {
     "@babel/core": "^7.9.0",
     "@babel/preset-env": "^7.9.5",
