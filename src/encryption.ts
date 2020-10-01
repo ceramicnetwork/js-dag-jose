@@ -1,6 +1,5 @@
 import { fromBase64url, toBase64url } from './utils'
 import CID from 'cids'
-import { createJWE, decryptJWE, Encrypter, Decrypter } from 'did-jwt'
 
 interface JWERecipient {
   encrypted_key?: string // eslint-disable-line @typescript-eslint/camelcase
@@ -82,21 +81,6 @@ function decode(encoded: EncodedJWE): DagJWE {
   if (encoded.recipients) jwe.recipients = encoded.recipients.map(decodeRecipient)
   if (encoded.unprotected) jwe.unprotected = encoded.unprotected
   return jwe
-}
-
-export async function createDagJWE(
-  cid: CID,
-  encrypters: Array<Encrypter>,
-  header?: Record<string, any>,
-  aad?: Uint8Array
-): Promise<DagJWE> {
-  if (!CID.isCID(cid)) throw new Error('A CID has to be used as a payload')
-  return createJWE(cid.bytes, encrypters, header, aad)
-}
-
-export async function decryptDagJWE(jwe: DagJWE, decrypter: Decrypter): Promise<CID> {
-  const cidBytes = await decryptJWE(jwe as any, decrypter)
-  return new CID(cidBytes)
 }
 
 export default {

@@ -1,4 +1,4 @@
-import encryption, { createDagJWE, decryptDagJWE } from '../src/encryption'
+import encryption from '../src/encryption'
 import fixtures from './__fixtures__/encryption.fixtures'
 import CID from 'cids'
 import {
@@ -6,8 +6,27 @@ import {
   xc20pDirDecrypter,
   x25519Encrypter,
   x25519Decrypter,
+  createJWE,
+  decryptJWE,
+  Encrypter,
+  Decrypter
 } from 'did-jwt'
 import { generateKeyPairFromSeed } from '@stablelib/x25519'
+
+async function createDagJWE(
+  cid: CID,
+  encrypters: Array<Encrypter>,
+  header?: Record<string, any>,
+  aad?: Uint8Array
+): Promise<DagJWE> {
+  if (!CID.isCID(cid)) throw new Error('A CID has to be used as a payload')
+  return createJWE(cid.bytes, encrypters, header, aad)
+}
+
+async function decryptDagJWE(jwe: DagJWE, decrypter: Decrypter): Promise<CID> {
+  const cidBytes = await decryptJWE(jwe as any, decrypter)
+  return new CID(cidBytes)
+}
 
 describe('Encryption support', () => {
   let encrypter1, encrypter2, encrypter3

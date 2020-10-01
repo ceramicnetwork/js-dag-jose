@@ -1,9 +1,35 @@
-import signing, { createDagJWS, verifyDagJWS } from '../src/signing'
+import signing  from '../src/signing'
 import { fromBase64url, toBase64url } from '../src/utils'
 import fixtures from './__fixtures__/signing.fixtures'
 import * as u8a from 'uint8arrays'
 import CID from 'cids'
-import { EllipticSigner } from 'did-jwt'
+import { EllipticSigner, Signer, createJWS, verifyJWS } from 'did-jwt'
+import stringify from 'fast-json-stable-stringify'
+
+async function createDagJWS(
+  cid: CID,
+  signer: Signer,
+  protectedHeader: Record<string, any>
+): Promise<DagJWS> {
+  // TODO - this function only supports single signature for now
+  if (!CID.isCID(cid)) throw new Error('A CID has to be used as a payload')
+  const payload = toBase64url(cid.bytes)
+  if (protectedHeader) protectedHeader = JSON.parse(stringify(protectedHeader))
+  const jws = await createJWS(payload, signer, protectedHeader)
+  const dagJws = signing.fromSplit(jws.split('.'))
+  dagJws.link = cid
+  return dagJws
+}
+
+function verifyDagJWS(jws: DagJWS, publicKeys: Array<PublicKey>): Array<PublicKey> {
+  // TODO - this function should probably use multikeys
+  const pubkeys = []
+  for (const signObj of jws.signatures) {
+    const jwsString = `${signObj.protected}.${jws.payload}.${signObj.signature}`
+    pubkeys.push(verifyJWS(jwsString, publicKeys))
+  }
+  return pubkeys
+}
 
 describe('Signing support', () => {
   let signer1, signer2

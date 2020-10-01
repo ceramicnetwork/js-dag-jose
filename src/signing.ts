@@ -1,7 +1,5 @@
 import { fromBase64url, toBase64url } from './utils'
 import CID from 'cids'
-import { Signer, createJWS, verifyJWS } from 'did-jwt'
-import stringify from 'fast-json-stable-stringify'
 
 interface JWSSignature {
   header?: Record<string, any>
@@ -81,31 +79,6 @@ function decode(encoded: EncodedJWS): DagJWS {
   }
   decoded.link = new CID(new Uint8Array(encoded.payload))
   return decoded
-}
-
-export async function createDagJWS(
-  cid: CID,
-  signer: Signer,
-  protectedHeader: Record<string, any>
-): Promise<DagJWS> {
-  // TODO - this function only supports single signature for now
-  if (!CID.isCID(cid)) throw new Error('A CID has to be used as a payload')
-  const payload = toBase64url(cid.bytes)
-  if (protectedHeader) protectedHeader = JSON.parse(stringify(protectedHeader))
-  const jws = await createJWS(payload, signer, protectedHeader)
-  const dagJws = fromSplit(jws.split('.'))
-  dagJws.link = cid
-  return dagJws
-}
-
-export function verifyDagJWS(jws: DagJWS, publicKeys: Array<PublicKey>): Array<PublicKey> {
-  // TODO - this function should probably use multikeys
-  const pubkeys = []
-  for (const signObj of jws.signatures) {
-    const jwsString = `${signObj.protected}.${jws.payload}.${signObj.signature}`
-    pubkeys.push(verifyJWS(jwsString, publicKeys))
-  }
-  return pubkeys
 }
 
 export default {

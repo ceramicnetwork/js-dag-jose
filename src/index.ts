@@ -1,6 +1,6 @@
-import signing, { DagJWS, EncodedJWS, createDagJWS, verifyDagJWS } from './signing'
+import signing, { DagJWS, EncodedJWS } from './signing'
 export type { DagJWS } from './signing'
-import encryption, { DagJWE, EncodedJWE, createDagJWE, decryptDagJWE } from './encryption'
+import encryption, { DagJWE, EncodedJWE } from './encryption'
 export type { DagJWE } from './encryption'
 import cbor from 'borc'
 
@@ -65,4 +65,3 @@ export default {
   encode,
   decode,
 }
-export { createDagJWS, verifyDagJWS, createDagJWE, decryptDagJWE }
