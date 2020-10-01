@@ -1,5 +1,4 @@
 import { fromBase64url, toBase64url } from './utils'
-import CID from 'cids'
 
 interface JWERecipient {
   encrypted_key?: string // eslint-disable-line @typescript-eslint/camelcase
