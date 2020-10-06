@@ -44,15 +44,15 @@ const payload = await encodePayload({ my: 'payload' })
 const jws = createJWS(u8a.toString(payload.cid.bytes), 'base64url', signer)
 
 // put jws in dag
-const cid = await ipfs.dag.put(jws, { format: format.codec, hashAlg: 'sha2-256' })
+const cid = await ipfs.dag.put(jws, { format: 'dag-jose', hashAlg: 'sha2-256' })
 
 // put the payload data into the ipfs dag
 const block = await ipfs.block.put(payload.linkedBlock, { cid: payload.cid })
 
 // get the value of the payload using the payload cid
-console.log((await ipfs.dag.get(jwsCid, { path: '/link' })).value)
+console.log((await ipfs.dag.get(cid, { path: '/link' })).value)
 // output:
-// > { some: 'data' }
+// > { my: 'payload' }
 
 // retreive JWS
 const obj = await ipfs.dat.get(cid)
