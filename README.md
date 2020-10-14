@@ -116,7 +116,7 @@ console.log(decodeCleartext(decryptedData))
 ```
 
 #### Encrypt and decrypt using other jose library
-The `did-jwt` library only supports `x25519` key exchange and `XChacha20Poly1305`. If you want to use the `dag-jose` codec with other algorithms you can encrypt another library and put the resulting JWE into the dag. Below is an example using the [jose](https://github.com/panva/jose/) library.
+The `did-jwt` library only supports `x25519` key exchange and `XChacha20Poly1305`. If you want to use the `dag-jose` codec with other less secure algorithms you can encrypt another library and put the resulting JWE into the dag. Below is an example using the [jose](https://github.com/panva/jose/) library.
 
 ```js
 const jwk = jose.JWK.generateSync('oct', 256)
