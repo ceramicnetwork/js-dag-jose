@@ -54,7 +54,7 @@ console.log((await ipfs.dag.get(cid, { path: '/link' })).value)
 // output:
 // > { my: 'payload' }
 
-// retreive JWS
+// retrieve JWS
 const obj = await ipfs.dag.get(cid)
 ```
 
