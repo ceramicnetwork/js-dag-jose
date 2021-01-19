@@ -37,11 +37,11 @@ import * as u8a from 'uint8arrays'
 ```js
 // prepare signer
 const privkey = // hex private key
-signer = new EllipticSigner(privkey)
+const signer = new EllipticSigner(privkey)
 
 // encode and sign payload
 const payload = await encodePayload({ my: 'payload' })
-const jws = createJWS(u8a.toString(payload.cid.bytes), 'base64url', signer)
+const jws = await createJWS(u8a.toString(payload.cid.bytes, 'base64url'), signer)
 
 // put jws in dag
 const cid = await ipfs.dag.put(jws, { format: 'dag-jose', hashAlg: 'sha2-256' })
@@ -54,8 +54,8 @@ console.log((await ipfs.dag.get(cid, { path: '/link' })).value)
 // output:
 // > { my: 'payload' }
 
-// retreive JWS
-const obj = await ipfs.dat.get(cid)
+// retrieve JWS
+const obj = await ipfs.dag.get(cid)
 ```
 
 ### JWE
