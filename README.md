@@ -37,7 +37,7 @@ import * as u8a from 'uint8arrays'
 ```js
 // prepare signer
 const privkey = // hex private key
-signer = new EllipticSigner(privkey)
+const signer = new EllipticSigner(privkey)
 
 // encode and sign payload
 const payload = await encodePayload({ my: 'payload' })
