@@ -1,11 +1,9 @@
-import { toString, fromString } from 'uint8arrays'
-
-const B64U = 'base64url'
+import { base64url } from 'multiformats/bases/base64'
 
 export function toBase64url(b: Uint8Array): string {
-  return toString(b, B64U)
+  return base64url.encode(b).slice(1)
 }
 
 export function fromBase64url(s: string): Uint8Array {
-  return fromString(s, B64U)
+  return base64url.decode(`u${s}`)
 }
