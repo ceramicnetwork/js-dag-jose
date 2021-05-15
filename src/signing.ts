@@ -37,7 +37,7 @@ function fromSplit(split: Array<string>): DagJWS {
   return {
     payload,
     signatures: [{ protected: protectedHeader, signature }],
-    link: CID.decode(fromBase64url(payload))
+    link: CID.decode(fromBase64url(payload)),
   }
 }
 

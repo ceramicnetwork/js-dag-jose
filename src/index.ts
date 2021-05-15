@@ -12,31 +12,51 @@ export const name = 'dag-jose'
 export const code = 133 // 0x85 https://github.com/multiformats/multicodec/blob/master/table.csv
 
 function isDagJWS(jose: DagJWS | DagJWE | EncodedJWS | EncodedJWE): jose is DagJWS | EncodedJWS {
-  return 'payload' in jose &&
+  return (
+    'payload' in jose &&
     typeof jose.payload === 'string' &&
     'signatures' in jose &&
     Array.isArray(jose.signatures)
+  )
 }
 
-function isEncodedJWS(jose: DagJWS | DagJWE | EncodedJWS | EncodedJWE): jose is DagJWS | EncodedJWS {
-  return 'payload' in jose &&
+function isEncodedJWS(
+  jose: DagJWS | DagJWE | EncodedJWS | EncodedJWE
+): jose is DagJWS | EncodedJWS {
+  return (
+    'payload' in jose &&
     jose.payload instanceof Uint8Array &&
     'signatures' in jose &&
     Array.isArray(jose.signatures)
+  )
 }
 
-function isEncodedJWE(jose: DagJWS | DagJWE | EncodedJWS | EncodedJWE): jose is DagJWE | EncodedJWE {
-  return 'ciphertext' in jose && jose.ciphertext instanceof Uint8Array &&
-      'iv' in jose && jose.iv instanceof Uint8Array &&
-      'protected' in jose && jose.protected instanceof Uint8Array &&
-      'tag' in jose && jose.tag instanceof Uint8Array
+function isEncodedJWE(
+  jose: DagJWS | DagJWE | EncodedJWS | EncodedJWE
+): jose is DagJWE | EncodedJWE {
+  return (
+    'ciphertext' in jose &&
+    jose.ciphertext instanceof Uint8Array &&
+    'iv' in jose &&
+    jose.iv instanceof Uint8Array &&
+    'protected' in jose &&
+    jose.protected instanceof Uint8Array &&
+    'tag' in jose &&
+    jose.tag instanceof Uint8Array
+  )
 }
 
 function isDagJWE(jose: DagJWS | DagJWE | EncodedJWS | EncodedJWE): jose is DagJWE | EncodedJWE {
-  return 'ciphertext' in jose && typeof jose.ciphertext === 'string' &&
-      'iv' in jose && typeof jose.iv === 'string' &&
-      'protected' in jose && typeof jose.protected === 'string' &&
-      'tag' in jose && typeof jose.tag === 'string'
+  return (
+    'ciphertext' in jose &&
+    typeof jose.ciphertext === 'string' &&
+    'iv' in jose &&
+    typeof jose.iv === 'string' &&
+    'protected' in jose &&
+    typeof jose.protected === 'string' &&
+    'tag' in jose &&
+    typeof jose.tag === 'string'
+  )
 }
 
 export function prepare(jose: DagJWS | DagJWE | string): DagJWS | DagJWE {

@@ -1,7 +1,7 @@
 import { fromBase64url, toBase64url } from './utils'
 
 interface JWERecipient {
-  encrypted_key?: string // eslint-disable-line @typescript-eslint/camelcase
+  encrypted_key?: string // eslint-disable-line
   header?: Record<string, any>
 }
 
@@ -16,7 +16,7 @@ export interface DagJWE {
 }
 
 interface EncodedRecipient {
-  encrypted_key?: Uint8Array // eslint-disable-line @typescript-eslint/camelcase
+  encrypted_key?: Uint8Array // eslint-disable-line
   header?: Record<string, any>
 }
 
@@ -31,20 +31,20 @@ export interface EncodedJWE {
 }
 
 function fromSplit(split: Array<string>): DagJWE {
-  const [protectedHeader, encrypted_key, iv, ciphertext, tag] = split // eslint-disable-line @typescript-eslint/camelcase
+  const [protectedHeader, encrypted_key, iv, ciphertext, tag] = split // eslint-disable-line
   const jwe: DagJWE = {
     ciphertext,
     iv,
     protected: protectedHeader,
     tag,
   }
-  if (encrypted_key) jwe.recipients = [{ encrypted_key }] // eslint-disable-line @typescript-eslint/camelcase
+  if (encrypted_key) jwe.recipients = [{ encrypted_key }] // eslint-disable-line
   return jwe
 }
 
 function encodeRecipient(recipient: JWERecipient): EncodedRecipient {
   const encRec: EncodedRecipient = {}
-  if (recipient.encrypted_key) encRec.encrypted_key = fromBase64url(recipient.encrypted_key) // eslint-disable-line @typescript-eslint/camelcase
+  if (recipient.encrypted_key) encRec.encrypted_key = fromBase64url(recipient.encrypted_key) // eslint-disable-line
   if (recipient.header) encRec.header = recipient.header
   return encRec
 }
@@ -64,7 +64,7 @@ function encode(jwe: DagJWE): EncodedJWE {
 
 function decodeRecipient(encoded: EncodedRecipient): JWERecipient {
   const recipient: JWERecipient = {}
-  if (encoded.encrypted_key) recipient.encrypted_key = toBase64url(encoded.encrypted_key) // eslint-disable-line @typescript-eslint/camelcase
+  if (encoded.encrypted_key) recipient.encrypted_key = toBase64url(encoded.encrypted_key) // eslint-disable-line
   if (encoded.header) recipient.header = encoded.header
   return recipient
 }
