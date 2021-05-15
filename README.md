@@ -1,118 +1,228 @@
 # dag-jose
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fceramicnetwork%2Fjs-dag-jose.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fceramicnetwork%2Fjs-dag-jose?ref=badge_shield)
 
-
-This library provides a typescript implementation of the dag-jose codec for ipld.
+This library provides a TypeScript implementation of the DAG-JOSE codec for IPLD.
 
 It supports the new [multiformats](https://github.com/multiformats/js-multiformats) library in order to be compatible with both the current and future js-ipfs implementations.
 
-To create dag-jose compatible jose objects we recommend using the [dag-jose-utils](https://github.com/ceramicnetwork/js-dag-jose-utils) library.
+To create and work with DAG-JOSE compatible JOSE objects we recommend using the [dag-jose-utils](https://github.com/ceramicnetwork/js-dag-jose-utils) library.
 
-## Usage
-First setup the codec:
+* [JWS Signing Usage](#jws-signing-usage)
+* [JWE Encryption Usage](#jwe-encryption-usage)
+  * [Symmetric encryption](#symmetric-encryption)
+  * [Asymmetric encryption](#asymmetric-encryption)
+* [Maintainer](#maintainer)
+* [License](#license)
+
+## JWS Signing Usage
+
+_The following example is available in complete form in [example-signing-ipld.mjs](./example-signing-ipld.mjs)._
+
+For independent usage as an IPLD codec:
+
 ```js
-import dagJose from 'dag-jose'
-import multiformats from 'multiformats/basics.js'
-import legacy from 'multiformats/legacy.js'
-import Ipfs from 'ipfs'
-
-multiformats.multicodec.add(dagJose)
-const format = legacy(multiformats, dagJose.name)
-const ipfs = await Ipfs.create({ ipld: { formats: [format] } })
+import * as Block from 'multiformats/block'
+import { sha256 } from 'multiformats/hashes/sha2'
+import * as dagCbor from '@ipld/dag-cbor' // for decoding the signed payload
+import * as dagJose from 'dag-jose'
 ```
 
-### JWS
-Import additional libraries for JWS creation
+Import additional libraries for JWS handling:
+
 ```js
+// JWT & utilities
+import {
+  ES256KSigner,
+  createJWS,
+  verifyJWS
+} from 'did-jwt'
 import {
   encodePayload,
+  toJWSPayload,
+  toJWSStrings
 } from 'dag-jose-utils'
-import {
-  EllipticSigner,
-  createJWS,
-} from 'did-jwt'
-import * as u8a from 'uint8arrays'
+```
+
+Given a keypair:
+
+```js
+const pubkey = '03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479'
+const privkey = '278a5de700e29faae8e40e366ec5012b5ec63d36ec77e8a2417154cc1d25383f'
+```
+
+Create a signed envelope block:
+
+```js
+const signer = ES256KSigner(privkey)
+// arbitrary data to DAG-CBOR encode, we get a:
+// { cid:CID, linkedBlock: Uint8Array }
+const payloadBlock = await encodePayload(payload)
+// sign the CID as a JWS using our signer
+const jws = await createJWS(toJWSPayload(payloadBlock), signer)
+// convert our JWS to a DagJWS for IPLD encoidng
+const dagJWS = dagJose.prepare(jws)
+// encode as a DagJWS IPLD block
+const jwsBlock = await Block.encode({ value: dagJWS, codec: dagJose, hasher: sha256 })
+
+// we now have two blocks, a signed envelope and a payload
+// DagJWS envelope:
+//  - CID: jwsBlock.cid
+//  - Bytes: jwsBlock.bytes
+// Payload:
+//  - CID: payloadBlock.cid
+//  - Bytes: payloadBlock.linkedBlock
+```
+
+Given a DagJWS envelope block CID, load its bytes, verify the signature and load the linked payload block:
+
+```js
+const jwsBlock = await Block.decode({ bytes, codec: dagJose, hasher: sha256 })
+const jwsStrings = toJWSStrings(jwsBlock.value)
+// verify the signatures found in the block against our pubkey
+for (const jws of jwsStrings) {
+  const verifiedKey = verifyJWS(jws, [{ publicKeyHex: pubkey }]) // will throw if it doesn't verify
+  console.log(`Verified JWS envelope \u001b[32m${cid}\u001b[39m with public key:\n\t${verifiedKey.publicKeyHex}`)
+}
+
+const payloadCid = jwsBlock.value.link
+const payloadBytes = store.get(payloadCid.toString())
+const payloadBlock = Block.decode({ bytes: payloadBytes, codec: dagCbor, hasher: sha256 })
+
+// The signed and verified payload is available in `payloadBlock.value`
+```
+
+## JWE Encryption Usage
+
+When using DAG-JOSE (for JWE or JWS) with js-IPFS, you will need to convert it from a raw multiformats style codec to a legacy IPLD codec using [blockcodec-to-ipld-format](https://github.com/ipld/js-blockcodec-to-ipld-format).
+
+_The following example is available in complete form in [example-ipfs.mjs](./example-ipfs.mjs)._
+
+_A plain IPLD (without IPFS, for cases where you are managing the block store) version is available in [example-ipld.mjs](./example-ipld.mjs)._
+
+```js
+// IPLD & IPFS
+import { create as createIpfs } from 'ipfs'
+import { convert as toLegacyIpld } from 'blockcodec-to-ipld-format'
+
+import * as dagJose from 'dag-jose'
 ```
 
 ```js
-// prepare signer
-const privkey = // hex private key
-const signer = new EllipticSigner(privkey)
-
-// encode and sign payload
-const payload = await encodePayload({ my: 'payload' })
-const jws = await createJWS(u8a.toString(payload.cid.bytes, 'base64url'), signer)
-
-// put jws in dag
-const cid = await ipfs.dag.put(jws, { format: 'dag-jose', hashAlg: 'sha2-256' })
-
-// put the payload data into the ipfs dag
-const block = await ipfs.block.put(payload.linkedBlock, { cid: payload.cid })
-
-// get the value of the payload using the payload cid
-console.log((await ipfs.dag.get(cid, { path: '/link' })).value)
-// output:
-// > { my: 'payload' }
-
-// retrieve JWS
-const obj = await ipfs.dag.get(cid)
-```
-
-### JWE
-```js
-import {
-  prepareCleartext,
-  decodeCleartext
-} from 'dag-jose-utils'
+// JWT & utilities
 import {
   xc20pDirEncrypter,
   xc20pDirDecrypter,
   x25519Encrypter,
   x25519Decrypter,
+  decryptJWE,
   createJWE
 } from 'did-jwt'
+import {
+  decodeCleartext,
+  prepareCleartext
+} from 'dag-jose-utils'
+```
+
+```js
+// Miscellaneous crypto libraries to support the examples
+import { randomBytes } from '@stablelib/random'
 import { generateKeyPairFromSeed } from '@stablelib/x25519'
 ```
 
-Symmetric encryption:
+Set up js-IPFS:
+
 ```js
-const key = // 32 byte Uint8Array
+const dagJoseIpldFormat = toLegacyIpld(dagJose)
 
-const dirEncrypter = xc20pDirEncrypter(key)
-const dirDecrypter = xc20pDirDecrypter(key)
-
-// prepare cleartext
-const cleartext = prepareCleartext({ my: 'secret message' })
-
-// encrypt and put into ipfs
-const jwe = await createJWE(cleartext, [dirEncrypter])
-const cid = await ipfs.dag.put(jwe, { format: format.codec, hashAlg: 'sha2-256' })
-
-// retreive and decrypt object
-const retrived = await ipfs.dag.get(cid)
-const decryptedData = await decryptJWE(retrived, dirDecrypter)
-console.log(decodeCleartext(decryptedData))
-// output:
-// { my: 'secret message' }
+// Async setup tasks
+async function setup () {
+  console.log('Starting IPFS ...')
+  // Instantiate an IPFS node, that knows how to deal with DAG-JOSE blocks
+  ipfs = await createIpfs({ ipld: { formats: [dagJoseIpldFormat] } })
+}
 ```
 
-Asymmetric encryption:
+### Symmetric encryption
+
+Encrypt and store a payload using a secret key:
+
 ```js
-const secretKey = // 32 byte Uint8Array
+const storeEncrypted = async (payload, key) => {
+  const dirEncrypter = xc20pDirEncrypter(key)
+  // prepares a cleartext object to be encrypted in a JWE
+  const cleartext = await prepareCleartext(secretz)
+  // encrypt into JWE container layout using secret key
+  const jwe = await createJWE(cleartext, [dirEncrypter])
+  // let IPFS store the bytes using the DAG-JOSE codec and return a CID
+  const cid = await ipfs.dag.put(jwe, { format: dagJoseIpldFormat.codec, hashAlg: 'sha2-256' })
+  console.log(`Encrypted block CID: \u001b[32m${cid}\u001b[39m`)
+  return cid
+}
+```
 
-const asymEncrypter = x25519Encrypter(generateKeyPairFromSeed(secretKey))
-const asymDecrypter = x25519Decrypter(secretKey)
+Load an encrypted block from a CID and decrypt the payload using a secret key:
 
-// encrypt and put into ipfs
-const jwe = await createJWE(cleartext, [asymEncrypter])
-const cid = await ipfs.dag.put(jwe, { format: format.codec, hashAlg: 'sha2-256' })
+```js
+const loadEncrypted = async (cid, key) => {
+  const dirDecrypter = xc20pDirDecrypter(key)
+  const retrieved = await ipfs.dag.get(cid)
+  const decryptedData = await decryptJWE(retrieved.value, dirDecrypter)
+  return decodeCleartext(decryptedData)
+}
+```
 
-// retreive and decrypt object
-const retrived = await ipfs.dag.get(cid)
-const decryptedData = await decryptJWE(retrived, asymDecrypter)
-console.log(decodeCleartext(decryptedData))
-// output:
-// { my: 'secret message' }
+Create a key, encrypt and store a block, then load and decrypt it:
+
+```js
+const key = randomBytes(32)
+const secretz = { my: 'secret message' }
+console.log('Encrypting and storing secret:\u001b[1m', secretz, '\u001b[22m')
+const cid = await storeEncrypted(secretz, key)
+const decoded = await loadEncrypted(cid, key)
+console.log('Loaded and decrypted block content:\u001b[1m', decoded, '\u001b[22m')
+```
+
+### Asymmetric encryption
+
+Encrypt and store a payload using a public key:
+
+```js
+const storeEncrypted = async (payload, pubkey) => {
+  const asymEncrypter = x25519Encrypter(pubkey)
+  // prepares a cleartext object to be encrypted in a JWE
+  const cleartext = await prepareCleartext(payload)
+  // encrypt into JWE container layout using public key
+  const jwe = await createJWE(cleartext, [asymEncrypter])
+  // let IPFS store the bytes using the DAG-JOSE codec and return a CID
+  const cid = await ipfs.dag.put(jwe, { format: dagJoseIpldFormat.codec, hashAlg: 'sha2-256' })
+  console.log(`Encrypted block CID: \u001b[32m${cid}\u001b[39m`)
+  return cid
+}
+```
+
+Load an encrypted block from a CID and decrypt the payload using a secret key:
+
+```js
+const loadEncrypted = async (cid, privkey) => {
+  const asymDecrypter = x25519Decrypter(privkey)
+  // decode the DAG-JOSE envelope
+  const retrieved = await ipfs.dag.get(cid)
+  const decryptedData = await decryptJWE(retrieved.value, asymDecrypter)
+  return decodeCleartext(decryptedData)
+}
+```
+
+Create a key pair, encrypt and store a block using the public key, then load and decrypt it using the private key:
+
+```js
+const privkey = randomBytes(32)
+// generate a public key from the existing private key
+const pubkey = generateKeyPairFromSeed(privkey).publicKey
+const secretz = { my: 'secret message' }
+console.log('Encrypting and storing secret with public key:\u001b[1m', secretz, '\u001b[22m')
+const cid = await storeEncrypted(secretz, pubkey)
+const decoded = await loadEncrypted(cid, privkey)
+console.log('Loaded and decrypted block content with private key:\u001b[1m', decoded, '\u001b[22m')
 ```
 
 #### Encrypt and decrypt using other jose library
@@ -135,8 +245,9 @@ console.log(decodeCleartext(decryptedData))
 ```
 
 ## Maintainer
+
 [Joel Thorstensson](https://github.com/oed)
 
-
 ## License
+
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fceramicnetwork%2Fjs-dag-jose.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fceramicnetwork%2Fjs-dag-jose?ref=badge_large)

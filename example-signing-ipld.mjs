@@ -12,14 +12,13 @@ import {
 
 import * as Block from 'multiformats/block'
 import { sha256 } from 'multiformats/hashes/sha2'
-import * as dagJose from './lib/index.js'
 import * as dagCbor from '@ipld/dag-cbor'
+import * as dagJose from './lib/index.js'
 
 async function storeSigned (payload, privkey, store) {
   console.log('Signing and storing payload:\u001b[1m', payload, '\u001b[22m')
 
   const signer = ES256KSigner(privkey)
-
   // arbitrary data to DAG-CBOR encode, we get a:
   // { cid:CID, linkedBlock: Uint8Array }
   const payloadBlock = await encodePayload(payload)
