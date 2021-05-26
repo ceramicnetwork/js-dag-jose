@@ -59,7 +59,15 @@ function isDagJWE(jose: DagJWS | DagJWE | EncodedJWS | EncodedJWE): jose is DagJ
   )
 }
 
-export function prepare(jose: DagJWS | DagJWE | string): DagJWS | DagJWE {
+/**
+ * Create a properly formed DagJWS or DagJWE object, from either a DagJWS, or
+ * DagJWE or the compact string form of either.
+ * Applying this function on an already valid DagJWS or DagJWE object will be
+ * idempotent. So this function can be used to either verify the proper object
+ * form, or expand a compact string form and ensure you have the same form
+ * of object that you would receive if you performed a round-trip encode/decode.
+ */
+export function toGeneral(jose: DagJWS | DagJWE | string): DagJWS | DagJWE {
   if (typeof jose === 'string') {
     const split = jose.split('.')
     if (split.length === 3) {
@@ -77,7 +85,7 @@ export function prepare(jose: DagJWS | DagJWE | string): DagJWS | DagJWE {
 
 export function encode(obj: DagJWS | DagJWE | string): ByteView<EncodedJWS | EncodedJWE> {
   if (typeof obj === 'string') {
-    obj = prepare(obj)
+    obj = toGeneral(obj)
   }
   let encodedJose
   if (isDagJWS(obj)) {

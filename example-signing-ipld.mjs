@@ -24,10 +24,17 @@ async function storeSigned (payload, privkey, store) {
   const payloadBlock = await encodePayload(payload)
   // sign the CID as a JWS using our signer
   const jws = await createJWS(toJWSPayload(payloadBlock), signer)
-  // convert our JWS to a DagJWS for IPLD encoidng
-  const dagJWS = dagJose.prepare(jws)
+
+  // createJWS gives us a compact string form JWS, DAG-JOSE will accept both the
+  // compact and general (object) form but a round-trip decode will always
+  // result in the general form. If we want need `jws` to be isometric regardless
+  // of whether it has been round-tripped through DAG-JOSE or straight out of
+  // `createJWS()` we can call `toGeneral()` to ensure it is always in the
+  // general form.
+  // jws = dagJose.toGeneral(jws)
+
   // encode as a DagJWS IPLD block
-  const jwsBlock = await Block.encode({ value: dagJWS, codec: dagJose, hasher: sha256 })
+  const jwsBlock = await Block.encode({ value: jws, codec: dagJose, hasher: sha256 })
 
   // we now have two blocks, a signed envelope and a payload
   // DagJWS envelope:
