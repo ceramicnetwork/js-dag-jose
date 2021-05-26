@@ -12,7 +12,7 @@ import { ES256KSigner } from 'did-jwt'
 
 describe('dag-jose codec', () => {
   describe('DagJWS', () => {
-    it.only('Encode compact jws', () => {
+    it('Encode compact jws', () => {
       const encoded = dagJose.encode(sFixtures.compact)
       expect(encoded).toEqual(sFixtures.blockEncoded.oneSig[0])
     })

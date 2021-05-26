@@ -27,7 +27,7 @@ async function symmetric () {
   const storeEncrypted = async (payload, key) => {
     const dirEncrypter = xc20pDirEncrypter(key)
     // prepares a cleartext object to be encrypted in a JWE
-    const cleartext = await prepareCleartext(secretz)
+    const cleartext = await prepareCleartext(payload)
     // encrypt into JWE container layout using secret key
     const jwe = await createJWE(cleartext, [dirEncrypter])
     // create an IPLD Block that has the CID:Bytes:Value triple
@@ -43,11 +43,8 @@ async function symmetric () {
   const loadEncrypted = async (cid, key) => {
     const dirDecrypter = xc20pDirDecrypter(key)
     const bytes = store.get(cid.toString())
-    // decode the DAG-JOSE envelope
-    const block = await Block.decode({ bytes, codec: dagJose, hasher: sha256 })
-    if (!block.cid.equals(cid)) {
-      throw new Error('CID mismatch')
-    }
+    // decode the DAG-JOSE envelope and verify the bytes match the CID
+    const block = await Block.create({ bytes, cid, codec: dagJose, hasher: sha256 })
     // decrypt the encrypted payload
     const decryptedData = await decryptJWE(block.value, dirDecrypter)
     return decodeCleartext(decryptedData)
@@ -84,7 +81,7 @@ async function asymmetric () {
     const asymDecrypter = x25519Decrypter(privkey)
     const bytes = store.get(cid.toString())
     // decode the DAG-JOSE envelope
-    const block = await Block.decode({ bytes, codec: dagJose, hasher: sha256 })
+    const block = await Block.create({ bytes, cid, codec: dagJose, hasher: sha256 })
     if (!block.cid.equals(cid)) {
       throw new Error('CID mismatch')
     }

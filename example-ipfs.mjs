@@ -37,7 +37,7 @@ async function symmetric () {
   const storeEncrypted = async (payload, key) => {
     const dirEncrypter = xc20pDirEncrypter(key)
     // prepares a cleartext object to be encrypted in a JWE
-    const cleartext = await prepareCleartext(secretz)
+    const cleartext = await prepareCleartext(payload)
     // encrypt into JWE container layout using secret key
     const jwe = await createJWE(cleartext, [dirEncrypter])
     // let IPFS store the bytes using the DAG-JOSE codec and return a CID

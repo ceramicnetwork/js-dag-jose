@@ -50,7 +50,8 @@ async function storeSigned (payload, privkey, store) {
 async function loadVerified (cid, store, pubkey) {
   // load envelope DagJWS block
   const bytes = store.get(cid.toString())
-  const jwsBlock = await Block.decode({ bytes, codec: dagJose, hasher: sha256 })
+  // validate cid matches bytes and decode dag-jose JWS
+  const jwsBlock = await Block.create({ bytes, cid, codec: dagJose, hasher: sha256 })
   const jwsStrings = toJWSStrings(jwsBlock.value)
   // verify the signatures found in the block against our pubkey
   for (const jws of jwsStrings) {
@@ -60,7 +61,8 @@ async function loadVerified (cid, store, pubkey) {
 
   const payloadCid = jwsBlock.value.link
   const payloadBytes = store.get(payloadCid.toString())
-  return await Block.decode({ bytes: payloadBytes, codec: dagCbor, hasher: sha256 })
+  // validate payloadCid matches bytes and decode dag-cbor payload
+  return await Block.create({ bytes: payloadBytes, cid: payloadCid, codec: dagCbor, hasher: sha256 })
 }
 
 async function signing () {

@@ -76,7 +76,8 @@ const jwsBlock = await Block.encode({ value: dagJWS, codec: dagJose, hasher: sha
 Given a DagJWS envelope block CID, load its bytes, verify the signature and load the linked payload block:
 
 ```js
-const jwsBlock = await Block.decode({ bytes, codec: dagJose, hasher: sha256 })
+// validate cid matches bytes and decode dag-jose JWS
+const jwsBlock = await Block.create({ bytes, cid, codec: dagJose, hasher: sha256 })
 const jwsStrings = toJWSStrings(jwsBlock.value)
 // verify the signatures found in the block against our pubkey
 for (const jws of jwsStrings) {
@@ -85,8 +86,12 @@ for (const jws of jwsStrings) {
 }
 
 const payloadCid = jwsBlock.value.link
+// `store.get()` represents a block store, where `get(cid:string):Uint8Array`,
+// in this example case it's simply a `Map` but it could be any method of
+// fetching bytes for a CID
 const payloadBytes = store.get(payloadCid.toString())
-const payloadBlock = Block.decode({ bytes: payloadBytes, codec: dagCbor, hasher: sha256 })
+// validate payloadCid matches bytes and decode dag-cbor payload
+const payloadBlock = await Block.create({ bytes: payloadBytes, cid: payloadCid, codec: dagCbor, hasher: sha256 })
 
 // The signed and verified payload is available in `payloadBlock.value`
 ```
@@ -150,7 +155,7 @@ Encrypt and store a payload using a secret key:
 const storeEncrypted = async (payload, key) => {
   const dirEncrypter = xc20pDirEncrypter(key)
   // prepares a cleartext object to be encrypted in a JWE
-  const cleartext = await prepareCleartext(secretz)
+  const cleartext = await prepareCleartext(payload)
   // encrypt into JWE container layout using secret key
   const jwe = await createJWE(cleartext, [dirEncrypter])
   // let IPFS store the bytes using the DAG-JOSE codec and return a CID
