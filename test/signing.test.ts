@@ -1,18 +1,21 @@
-import signing  from '../src/signing'
-import { fromBase64url, toBase64url } from '../src/utils'
+/* eslint-env jest */
+
+import signing, { PublicKey}  from '../src/signing'
+import { DagJWS }  from '../src/index'
+import { toBase64url } from '../src/utils'
 import fixtures from './__fixtures__/signing.fixtures'
-import * as u8a from 'uint8arrays'
-import CID from 'cids'
-import { EllipticSigner, Signer, createJWS, verifyJWS } from 'did-jwt'
+import { CID, bytes } from 'multiformats'
+import { ES256KSigner, Signer, createJWS, verifyJWS } from 'did-jwt'
 import stringify from 'fast-json-stable-stringify'
 
-async function createDagJWS(
+export async function createDagJWS(
   cid: CID,
   signer: Signer,
-  protectedHeader: Record<string, any>
+  protectedHeader?: Record<string, any>
 ): Promise<DagJWS> {
   // TODO - this function only supports single signature for now
-  if (!CID.isCID(cid)) throw new Error('A CID has to be used as a payload')
+  cid = CID.asCID(cid)
+  if (!cid) throw new Error('A CID has to be used as a payload')
   const payload = toBase64url(cid.bytes)
   if (protectedHeader) protectedHeader = JSON.parse(stringify(protectedHeader))
   const jws = await createJWS(payload, signer, protectedHeader)
@@ -35,8 +38,8 @@ describe('Signing support', () => {
   let signer1, signer2
 
   beforeAll(() => {
-    signer1 = new EllipticSigner(fixtures.keys[0].priv)
-    signer2 = new EllipticSigner(fixtures.keys[1].priv)
+    signer1 = ES256KSigner(fixtures.keys[0].priv)
+    signer2 = ES256KSigner(fixtures.keys[1].priv)
   })
 
   describe('fromSplit', () => {
@@ -78,7 +81,7 @@ describe('Signing support', () => {
     })
 
     it('Throws if payload is not a CID', async () => {
-      const payload = toBase64url(u8a.fromString(JSON.stringify({ json: 'payload' })))
+      const payload = toBase64url(bytes.fromString(JSON.stringify({ json: 'payload' })))
       const notDagJws = Object.assign({}, fixtures.dagJws.oneSig[0], { payload })
       expect(() => signing.encode(notDagJws)).toThrow('Not a valid DagJWS')
     })
@@ -120,7 +123,7 @@ describe('Signing support', () => {
     })
 
     it('Creates DagJWS with CID as payload', async () => {
-      const cid = new CID('bafybeig6xv5nwphfmvcnektpnojts33jqcuam7bmye2pb54adnrtccjlsu')
+      const cid = CID.parse('bafybeig6xv5nwphfmvcnektpnojts33jqcuam7bmye2pb54adnrtccjlsu')
       let dagJws
       dagJws = await createDagJWS(cid, signer1)
       expect(dagJws).toEqual(fixtures.dagJws.oneSig[0])

@@ -1,6 +1,9 @@
+/* eslint-env jest */
+
 import encryption from '../src/encryption'
+import { DagJWE } from '../src/index'
 import fixtures from './__fixtures__/encryption.fixtures'
-import CID from 'cids'
+import { CID } from 'multiformats/cid'
 import {
   xc20pDirEncrypter,
   xc20pDirDecrypter,
@@ -19,13 +22,14 @@ async function createDagJWE(
   header?: Record<string, any>,
   aad?: Uint8Array
 ): Promise<DagJWE> {
-  if (!CID.isCID(cid)) throw new Error('A CID has to be used as a payload')
+  cid = CID.asCID(cid)
+  if (!cid) throw new Error('A CID has to be used as a payload')
   return createJWE(cid.bytes, encrypters, header, aad)
 }
 
 async function decryptDagJWE(jwe: DagJWE, decrypter: Decrypter): Promise<CID> {
   const cidBytes = await decryptJWE(jwe as any, decrypter)
-  return new CID(cidBytes)
+  return CID.decode(cidBytes)
 }
 
 describe('Encryption support', () => {
@@ -83,12 +87,15 @@ describe('Encryption support', () => {
   })
 
   describe('createDagJWE and decryptDagJWE', () => {
-    const cleartextCID = new CID('bafybeig6xv5nwphfmvcnektpnojts33jqcuam7bmye2pb54adnrtccjlsu')
+    const cleartextCID = CID.parse('bafybeig6xv5nwphfmvcnektpnojts33jqcuam7bmye2pb54adnrtccjlsu')
     it('Throws if payload is not a CID', async () => {
       const msg = 'A CID has to be used as a payload'
       let notCID = 'foireufhiuh'
+      // @ts-ignore
       await expect(createDagJWE(notCID, [encrypter1])).rejects.toThrowError(msg)
+      // @ts-ignore
       notCID = { my: 'payload' }
+      // @ts-ignore
       await expect(createDagJWE(notCID, [encrypter1])).rejects.toThrowError(msg)
     })
 

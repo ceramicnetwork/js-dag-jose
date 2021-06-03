@@ -28,38 +28,38 @@
   },
   "homepage": "https://github.com/ceramicnetwork/js-dag-jose#readme",
   "devDependencies": {
-    "@babel/core": "^7.9.0",
-    "@babel/preset-env": "^7.9.5",
-    "@babel/preset-typescript": "^7.9.0",
-    "@stablelib/x25519": "^1.0.0",
+    "@babel/core": "^7.14.3",
+    "@babel/preset-env": "^7.14.4",
+    "@babel/preset-typescript": "^7.13.0",
+    "@stablelib/x25519": "^1.0.1",
+    "@types/jest": "^26.0.23",
     "@types/lodash.transform": "^4.6.6",
-    "@types/node": "^13.13.2",
-    "@typescript-eslint/eslint-plugin": "^2.30.0",
-    "@typescript-eslint/parser": "^2.30.0",
-    "babel-jest": "^25.4.0",
-    "did-jwt": "^4.6.1",
-    "eslint": "^6.8.0",
-    "eslint-config-3box": "^0.1.2",
-    "eslint-plugin-jest": "^23.8.2",
+    "@types/node": "^15.9.0",
+    "@typescript-eslint/eslint-plugin": "^4.26.0",
+    "@typescript-eslint/parser": "^4.26.0",
+    "babel-jest": "^27.0.2",
+    "blockcodec-to-ipld-format": "^1.0.0",
+    "did-jwt": "^5.5.2",
+    "enhanced-resolve": "^5.8.2",
+    "eslint": "^7.27.0",
+    "eslint-config-3box": "^0.2.0",
+    "eslint-plugin-jest": "^24.3.6",
     "fast-json-stable-stringify": "^2.1.0",
-    "ipld": "^0.27.1",
-    "ipld-in-memory": "^6.0.0",
-    "jest": "^25.4.0",
-    "multiformats": "^3.0.0",
-    "prettier": "^2.0.5",
-    "typescript": "^3.8.3"
-  },
-  "dependencies": {
-    "borc": "^2.1.2",
-    "cids": "^1.0.0",
-    "uint8arrays": "^1.1.0"
+    "ipld": "^0.30.0",
+    "ipld-in-memory": "^8.0.0",
+    "jest": "^27.0.3",
+    "prettier": "^2.3.0",
+    "typescript": "^4.3.2"
   },
   "jest": {
-    "transformIgnorePatterns": [
-      "/node_modules(?!/multiformats)/"
-    ],
+    "resolver": "./test/_export_maps_resolver",
     "testPathIgnorePatterns": [
       ".*__fixtures__.*"
-    ]
+    ],
+    "testEnvironment": "node"
+  },
+  "dependencies": {
+    "@ipld/dag-cbor": "^6.0.3",
+    "multiformats": "^9.0.2"
   }
 }
