@@ -28,28 +28,28 @@
   },
   "homepage": "https://github.com/ceramicnetwork/js-dag-jose#readme",
   "devDependencies": {
-    "@babel/core": "^7.14.2",
-    "@babel/preset-env": "^7.14.2",
+    "@babel/core": "^7.14.3",
+    "@babel/preset-env": "^7.14.4",
     "@babel/preset-typescript": "^7.13.0",
-    "@stablelib/x25519": "^1.0.0",
+    "@stablelib/x25519": "^1.0.1",
     "@types/jest": "^26.0.23",
     "@types/lodash.transform": "^4.6.6",
-    "@types/node": "^15.0.3",
-    "@typescript-eslint/eslint-plugin": "^4.23.0",
-    "@typescript-eslint/parser": "^4.23.0",
-    "babel-jest": "^26.6.3",
+    "@types/node": "^15.9.0",
+    "@typescript-eslint/eslint-plugin": "^4.26.0",
+    "@typescript-eslint/parser": "^4.26.0",
+    "babel-jest": "^27.0.2",
     "blockcodec-to-ipld-format": "^1.0.0",
-    "did-jwt": "^5.3.0",
+    "did-jwt": "^5.5.2",
     "enhanced-resolve": "^5.8.2",
-    "eslint": "^7.26.0",
+    "eslint": "^7.27.0",
     "eslint-config-3box": "^0.2.0",
     "eslint-plugin-jest": "^24.3.6",
     "fast-json-stable-stringify": "^2.1.0",
     "ipld": "^0.30.0",
     "ipld-in-memory": "^8.0.0",
-    "jest": "^26.6.3",
+    "jest": "^27.0.3",
     "prettier": "^2.3.0",
-    "typescript": "^4.2.4"
+    "typescript": "^4.3.2"
   },
   "jest": {
     "resolver": "./test/_export_maps_resolver",
@@ -59,7 +59,7 @@
     "testEnvironment": "node"
   },
   "dependencies": {
-    "@ipld/dag-cbor": "^5.0.5",
-    "multiformats": "^8.0.5"
+    "@ipld/dag-cbor": "^6.0.3",
+    "multiformats": "^9.0.2"
   }
 }
