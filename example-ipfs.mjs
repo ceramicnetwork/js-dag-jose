@@ -38,7 +38,7 @@ async function symmetric () {
     // encrypt into JWE container layout using secret key
     const jwe = await createJWE(cleartext, [dirEncrypter])
     // let IPFS store the bytes using the DAG-JOSE codec and return a CID
-    const cid = await ipfs.dag.put(jwe, { format: 'dag-jose', hashAlg: 'sha2-256' })
+    const cid = await ipfs.dag.put(jwe, { format: dagJose.name, hashAlg: 'sha2-256' })
     console.log(`Encrypted block CID: \u001b[32m${cid}\u001b[39m`)
     return cid
   }
@@ -69,7 +69,7 @@ async function asymmetric () {
     // encrypt into JWE container layout using public key
     const jwe = await createJWE(cleartext, [asymEncrypter])
     // let IPFS store the bytes using the DAG-JOSE codec and return a CID
-    const cid = await ipfs.dag.put(jwe, { format: 'dag-jose', hashAlg: 'sha2-256' })
+    const cid = await ipfs.dag.put(jwe, { format: dagJose.name, hashAlg: 'sha2-256' })
     console.log(`Encrypted block CID: \u001b[32m${cid}\u001b[39m`)
     return cid
   }
