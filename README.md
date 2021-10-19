@@ -144,13 +144,11 @@ import { generateKeyPairFromSeed } from '@stablelib/x25519'
 Set up js-IPFS:
 
 ```js
-const dagJoseIpldFormat = convert(dagJose)
-
 // Async setup tasks
 async function setup () {
   console.log('Starting IPFS ...')
   // Instantiate an IPFS node, that knows how to deal with DAG-JOSE blocks
-  ipfs = await createIpfs({ ipld: { codecs: [dagJoseIpldFormat] } }); // also works without specifying the codec, ipld will load it dynamically
+  ipfs = await createIpfs();
 }
 ```
 
@@ -166,7 +164,7 @@ const storeEncrypted = async (payload, key) => {
   // encrypt into JWE container layout using secret key
   const jwe = await createJWE(cleartext, [dirEncrypter])
   // let IPFS store the bytes using the DAG-JOSE codec and return a CID
-  const cid = await ipfs.dag.put(jwe, { format: dagJoseIpldFormat.codec, hashAlg: 'sha2-256' })
+  const cid = await ipfs.dag.put(jwe, { format: dagJose.codec, hashAlg: 'sha2-256' })
   console.log(`Encrypted block CID: \u001b[32m${cid}\u001b[39m`)
   return cid
 }
@@ -206,7 +204,7 @@ const storeEncrypted = async (payload, pubkey) => {
   // encrypt into JWE container layout using public key
   const jwe = await createJWE(cleartext, [asymEncrypter])
   // let IPFS store the bytes using the DAG-JOSE codec and return a CID
-  const cid = await ipfs.dag.put(jwe, { format: dagJoseIpldFormat.codec, hashAlg: 'sha2-256' })
+  const cid = await ipfs.dag.put(jwe, { format: dagJose.codec, hashAlg: 'sha2-256' })
   console.log(`Encrypted block CID: \u001b[32m${cid}\u001b[39m`)
   return cid
 }
