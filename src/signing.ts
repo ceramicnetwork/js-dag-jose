@@ -1,4 +1,4 @@
-import { fromBase64url, toBase64url } from './utils'
+import { fromBase64url, toBase64url } from './utils.js'
 import { CID } from 'multiformats/cid'
 
 interface JWSSignature {
@@ -32,7 +32,7 @@ export interface PublicKey {
   publicKeyBase64?: string
 }
 
-function fromSplit(split: Array<string>): DagJWS {
+export function fromSplit(split: Array<string>): DagJWS {
   const [protectedHeader, payload, signature] = split
   return {
     payload,
@@ -50,18 +50,17 @@ function encodeSignature(signature: JWSSignature): EncodedSignature {
   return encoded
 }
 
-function encode(jws: DagJWS): EncodedJWS {
+export function encode(jws: DagJWS): EncodedJWS {
   const payload = fromBase64url(jws.payload)
   try {
     CID.decode(payload)
   } catch (e) {
     throw new Error('Not a valid DagJWS')
   }
-  const encodedJws: EncodedJWS = {
+  return {
     payload,
     signatures: jws.signatures.map(encodeSignature),
   }
-  return encodedJws
 }
 
 function decodeSignature(encoded: EncodedSignature): JWSSignature {
@@ -73,17 +72,11 @@ function decodeSignature(encoded: EncodedSignature): JWSSignature {
   return sign
 }
 
-function decode(encoded: EncodedJWS): DagJWS {
+export function decode(encoded: EncodedJWS): DagJWS {
   const decoded: DagJWS = {
     payload: toBase64url(encoded.payload),
     signatures: encoded.signatures.map(decodeSignature),
   }
   decoded.link = CID.decode(new Uint8Array(encoded.payload))
   return decoded
-}
-
-export default {
-  fromSplit,
-  encode,
-  decode,
 }

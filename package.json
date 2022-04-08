@@ -2,9 +2,16 @@
   "name": "dag-jose",
   "version": "1.0.0",
   "description": "Typescript implementation of the IPLD dag-jose format",
-  "main": "lib/index.js",
+  "main": "./lib/index.js",
+  "type": "module",
+  "types": "./lib/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./lib/index.js"
+    }
+  },
   "scripts": {
-    "test": "jest --coverage",
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest --coverage",
     "build": "./node_modules/.bin/tsc -p tsconfig.json",
     "prepublishOnly": "npm run build",
     "prebuild": "npm run clean",
@@ -32,34 +39,26 @@
     "@babel/preset-env": "^7.14.4",
     "@babel/preset-typescript": "^7.13.0",
     "@stablelib/x25519": "^1.0.1",
-    "@types/jest": "^26.0.23",
+    "@types/jest": "^27.4.1",
     "@types/lodash.transform": "^4.6.6",
-    "@types/node": "^15.9.0",
-    "@typescript-eslint/eslint-plugin": "^4.26.0",
-    "@typescript-eslint/parser": "^4.26.0",
-    "babel-jest": "^27.0.2",
-    "blockcodec-to-ipld-format": "^1.0.0",
-    "did-jwt": "^5.5.2",
-    "enhanced-resolve": "^5.8.2",
-    "eslint": "^7.27.0",
-    "eslint-config-3box": "^0.2.0",
-    "eslint-plugin-jest": "^24.3.6",
+    "@typescript-eslint/eslint-plugin": "^5.18.0",
+    "@typescript-eslint/parser": "^5.18.0",
+    "babel-jest": "^27.5.1",
+    "blockcodec-to-ipld-format": "^2.0.0",
+    "did-jwt": "^6.0.0",
+    "eslint": "^8.12.0",
+    "eslint-config-3box": "^0.4.1",
+    "eslint-plugin-jest": "^26.1.4",
     "fast-json-stable-stringify": "^2.1.0",
     "ipld": "^0.30.0",
     "ipld-in-memory": "^8.0.0",
-    "jest": "^27.0.3",
+    "jest": "^27.5.1",
     "prettier": "^2.3.0",
-    "typescript": "^4.3.2"
-  },
-  "jest": {
-    "resolver": "./test/_export_maps_resolver",
-    "testPathIgnorePatterns": [
-      ".*__fixtures__.*"
-    ],
-    "testEnvironment": "node"
+    "typescript": "^4.3.2",
+    "uint8arrays": "^3.0.0"
   },
   "dependencies": {
-    "@ipld/dag-cbor": "^6.0.3",
-    "multiformats": "^9.0.2"
+    "@ipld/dag-cbor": "^7.0.1",
+    "multiformats": "^9.6.4"
   }
 }

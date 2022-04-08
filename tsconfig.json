@@ -1,8 +1,7 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "lib": ["dom", "es2017"],
-    "target": "es6",
+    "module": "ES2020",
+    "target": "ES2020",
     "declaration": true,
     "noImplicitAny": true,
     "removeComments": true,
@@ -10,6 +9,9 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "sourceMap": true,
+    "resolveJsonModule": false,
+    "moduleResolution": "Node",
+    "allowSyntheticDefaultImports": true,
     "outDir": "lib",
     "rootDir": "src"
   },

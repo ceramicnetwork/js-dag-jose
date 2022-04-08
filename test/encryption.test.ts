@@ -1,8 +1,8 @@
 /* eslint-env jest */
 
-import encryption from '../src/encryption'
-import { DagJWE } from '../src/index'
-import fixtures from './__fixtures__/encryption.fixtures'
+import * as encryption from '../src/encryption'
+import type { DagJWE } from '../src/encryption.js'
+import { fixtures } from './__fixtures__/encryption.fixtures'
 import { CID } from 'multiformats/cid'
 import {
   xc20pDirEncrypter,
@@ -12,7 +12,7 @@ import {
   createJWE,
   decryptJWE,
   Encrypter,
-  Decrypter
+  Decrypter,
 } from 'did-jwt'
 import { generateKeyPairFromSeed } from '@stablelib/x25519'
 
