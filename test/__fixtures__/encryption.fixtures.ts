@@ -1,7 +1,7 @@
 import { bytes } from 'multiformats'
 
 /*eslint-disable */
-const fixtures = {
+export const fixtures = {
   keys: [
     bytes.fromHex('278a5de700e29faae8e40e366ec5012b5ec63d36ec77e8a2417154cc1d25383f'),
     bytes.fromHex('62387646793457634876534678c5012b5ec63d36ec77e8a2417154cc1d25383f'),
@@ -141,5 +141,3 @@ const fixtures = {
   },
 }
 /*eslint-enable */
-
-export default fixtures

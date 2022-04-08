@@ -1,4 +1,4 @@
-import { fromBase64url, toBase64url } from './utils'
+import { fromBase64url, toBase64url } from './utils.js'
 
 interface JWERecipient {
   encrypted_key?: string
@@ -30,7 +30,7 @@ export interface EncodedJWE {
   unprotected?: Record<string, any>
 }
 
-function fromSplit(split: Array<string>): DagJWE {
+export function fromSplit(split: Array<string>): DagJWE {
   const [protectedHeader, encrypted_key, iv, ciphertext, tag] = split
   const jwe: DagJWE = {
     ciphertext,
@@ -49,7 +49,7 @@ function encodeRecipient(recipient: JWERecipient): EncodedRecipient {
   return encRec
 }
 
-function encode(jwe: DagJWE): EncodedJWE {
+export function encode(jwe: DagJWE): EncodedJWE {
   const encJwe: EncodedJWE = {
     ciphertext: fromBase64url(jwe.ciphertext),
     protected: fromBase64url(jwe.protected),
@@ -69,7 +69,7 @@ function decodeRecipient(encoded: EncodedRecipient): JWERecipient {
   return recipient
 }
 
-function decode(encoded: EncodedJWE): DagJWE {
+export function decode(encoded: EncodedJWE): DagJWE {
   const jwe: DagJWE = {
     ciphertext: toBase64url(encoded.ciphertext),
     protected: toBase64url(encoded.protected),
@@ -80,10 +80,4 @@ function decode(encoded: EncodedJWE): DagJWE {
   if (encoded.recipients) jwe.recipients = encoded.recipients.map(decodeRecipient)
   if (encoded.unprotected) jwe.unprotected = encoded.unprotected
   return jwe
-}
-
-export default {
-  fromSplit,
-  decode,
-  encode,
 }

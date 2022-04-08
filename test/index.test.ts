@@ -1,9 +1,9 @@
 /* eslint-env jest */
 
-import * as dagJose from '../src/index'
-import { createDagJWS } from './signing.test'
-import sFixtures from './__fixtures__/signing.fixtures'
-import eFixtures from './__fixtures__/encryption.fixtures'
+import * as dagJose from '../src/index.js'
+import { createDagJWS } from './signing.test.js'
+import { fixtures as sFixtures } from './__fixtures__/signing.fixtures'
+import { fixtures as eFixtures } from './__fixtures__/encryption.fixtures'
 import { convert as toLegacyIpld } from 'blockcodec-to-ipld-format'
 import IPLD from 'ipld'
 import ipldInMem from 'ipld-in-memory'
@@ -45,7 +45,9 @@ describe('dag-jose codec', () => {
       const cidPayload = CID.parse('bagcqcera73rupyla6bauseyk75rslfys3st25spm75ykhvgusqvv2zfqtucq')
       const dagJws = await createDagJWS(cidPayload, signer)
       const cid = await ipld.put(dagJws, format.codec)
-      expect(cid.toString()).toEqual('bagcqcera5p4hvkei322lg3hp3dvrmndlojwcst3gvq2nhledmv4plt2ore2q')
+      expect(cid.toString()).toEqual(
+        'bagcqcera5p4hvkei322lg3hp3dvrmndlojwcst3gvq2nhledmv4plt2ore2q'
+      )
       const data = await ipld.get(cid)
       expect(data).toEqual(sFixtures.dagJws.oneSig[0])
     })

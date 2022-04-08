@@ -1,12 +1,13 @@
 /* eslint-env jest */
 
-import signing, { PublicKey}  from '../src/signing'
-import { DagJWS }  from '../src/index'
+import * as signing from '../src/signing.js'
+import type { PublicKey, DagJWS } from '../src/signing.js'
 import { toBase64url } from '../src/utils'
-import fixtures from './__fixtures__/signing.fixtures'
+import { fixtures } from './__fixtures__/signing.fixtures'
 import { CID, bytes } from 'multiformats'
 import { ES256KSigner, Signer, createJWS, verifyJWS } from 'did-jwt'
 import stringify from 'fast-json-stable-stringify'
+import { fromString } from 'uint8arrays'
 
 export async function createDagJWS(
   cid: CID,
@@ -38,8 +39,8 @@ describe('Signing support', () => {
   let signer1, signer2
 
   beforeAll(() => {
-    signer1 = ES256KSigner(fixtures.keys[0].priv)
-    signer2 = ES256KSigner(fixtures.keys[1].priv)
+    signer1 = ES256KSigner(fromString(fixtures.keys[0].priv, 'base16'))
+    signer2 = ES256KSigner(fromString(fixtures.keys[1].priv, 'base16'))
   })
 
   describe('fromSplit', () => {

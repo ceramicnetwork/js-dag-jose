@@ -1,7 +1,7 @@
-import signing, { DagJWS, EncodedJWS } from './signing'
-export type { DagJWS } from './signing'
-import encryption, { DagJWE, EncodedJWE } from './encryption'
-export type { DagJWE } from './encryption'
+import * as signing from './signing.js'
+import type { DagJWS, EncodedJWS } from './signing.js'
+import * as encryption from './encryption.js'
+import type { DagJWE, EncodedJWE } from './encryption.js'
 import * as cbor from '@ipld/dag-cbor'
 import type { ByteView } from 'multiformats/codecs/interface'
 
