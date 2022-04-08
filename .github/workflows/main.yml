@@ -19,7 +19,7 @@ jobs:
         uses: actions/cache@v1
         with:
           path: node_modules
-          key: nodeModules-${{ hashFiles('**/package-lock.json') }}
+          key: nodeModules-${{ hashFiles('**/package-lock.json') }}-${{ matrix.node }}
           restore-keys: |
             nodeModules-
 
