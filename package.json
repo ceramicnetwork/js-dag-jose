@@ -1,6 +1,6 @@
 {
   "name": "dag-jose",
-  "version": "2.0.0-rc.0",
+  "version": "2.0.0-rc.1",
   "description": "Typescript implementation of the IPLD dag-jose format",
   "main": "./lib/index.js",
   "type": "module",
@@ -10,6 +10,9 @@
       "import": "./lib/index.js"
     }
   },
+  "files": [
+    "lib"
+  ],
   "scripts": {
     "test": "NODE_OPTIONS=--experimental-vm-modules npx jest --coverage",
     "build": "./node_modules/.bin/tsc -p tsconfig.json",
