@@ -1,7 +1,7 @@
 import { fromBase64url, toBase64url } from './utils.js'
 import { CID } from 'multiformats/cid'
 
-interface JWSSignature {
+export interface JWSSignature {
   header?: Record<string, any>
   protected?: string
   signature: string
@@ -13,7 +13,7 @@ export interface DagJWS {
   link?: CID
 }
 
-interface EncodedSignature {
+export interface EncodedSignature {
   header?: Record<string, any>
   protected?: Uint8Array
   signature: Uint8Array

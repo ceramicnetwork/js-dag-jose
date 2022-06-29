@@ -1,6 +1,6 @@
 import { fromBase64url, toBase64url } from './utils.js'
 
-interface JWERecipient {
+export interface JWERecipient {
   encrypted_key?: string
   header?: Record<string, any>
 }
@@ -15,7 +15,7 @@ export interface DagJWE {
   unprotected?: Record<string, any>
 }
 
-interface EncodedRecipient {
+export interface EncodedRecipient {
   encrypted_key?: Uint8Array
   header?: Record<string, any>
 }

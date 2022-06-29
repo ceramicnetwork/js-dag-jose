@@ -5,6 +5,9 @@ import type { DagJWE, EncodedJWE } from './encryption.js'
 import * as cbor from '@ipld/dag-cbor'
 import type { ByteView } from 'multiformats/codecs/interface'
 
+export type { DagJWS, JWSSignature, EncodedJWS, EncodedSignature } from './signing.js'
+export type { JWERecipient, DagJWE, EncodedRecipient, EncodedJWE } from './encryption.js'
+
 // string name of the codec
 export const name = 'dag-jose'
 
