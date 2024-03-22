@@ -11,6 +11,7 @@ export interface DagJWS {
   payload: string
   signatures: Array<JWSSignature>
   link?: CID
+  pld?: Record<string, any>
 }
 
 export interface EncodedSignature {
@@ -52,11 +53,6 @@ function encodeSignature(signature: JWSSignature): EncodedSignature {
 
 export function encode(jws: DagJWS): EncodedJWS {
   const payload = fromBase64url(jws.payload)
-  try {
-    CID.decode(payload)
-  } catch (e) {
-    throw new Error('Not a valid DagJWS')
-  }
   return {
     payload,
     signatures: jws.signatures.map(encodeSignature),
@@ -77,6 +73,41 @@ export function decode(encoded: EncodedJWS): DagJWS {
     payload: toBase64url(encoded.payload),
     signatures: encoded.signatures.map(decodeSignature),
   }
-  decoded.link = CID.decode(new Uint8Array(encoded.payload))
-  return decoded
+  try {
+    decoded.pld = replaceCIDs(payloadToJSON(encoded.payload)) as Record<string, any>
+    return decoded
+  } catch (e) {
+    try {
+      decoded.link = CID.decode(new Uint8Array(encoded.payload))
+      return decoded
+    } catch (e) {
+      throw new Error('Invalid payload, must be either JSON or CID')
+    }
+  }
+}
+
+function replaceCIDs(data: Record<string, any> | any): Record<string, any> | any {
+  if (typeof data === 'string') {
+    if (data.startsWith('ipfs://')) {
+      return CID.parse(data.slice(7))
+    }
+  } else if (Array.isArray(data)) {
+    return data.map(replaceCIDs) as any
+  } else if (isObject(data)) {
+    const newObj = {} as Record<string, any>
+    for (const key in data) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      newObj[key] = replaceCIDs(data[key])
+    }
+    return newObj
+  }
+  return data
+}
+
+function isObject(data: any): data is Record<string, any> {
+  return typeof data === 'object'
+}
+
+function payloadToJSON(data: Uint8Array): any {
+  return JSON.parse(new TextDecoder().decode(data))
 }

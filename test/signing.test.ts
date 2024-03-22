@@ -51,7 +51,7 @@ describe('Signing support', () => {
   })
 
   describe('decode', () => {
-    it('Decodes general encoding, one signature', () => {
+    it('CID, Decodes general encoding, one signature', () => {
       let decoded
       decoded = signing.decode(fixtures.encodedJws.oneSig[0])
       expect(decoded).toEqual(fixtures.dagJws.oneSig[0])
@@ -60,14 +60,19 @@ describe('Signing support', () => {
       expect(decoded).toEqual(fixtures.dagJws.oneSig[1])
     })
 
-    it('Decodes general encoding, multiple signatures', () => {
+    it('CID, Decodes general encoding, multiple signatures', () => {
       const decoded = signing.decode(fixtures.encodedJws.multipleSig)
       expect(decoded).toEqual(fixtures.dagJws.multipleSig)
+    })
+
+    it('JSON, Decodes jws with payload', () => {
+      const decoded = signing.decode(fixtures.encodedJws.withPayload)
+      expect(decoded).toEqual(fixtures.dagJws.withPayload)
     })
   })
 
   describe('encode', () => {
-    it('Encodes dag encoding, one signature', () => {
+    it('CID, Encodes dag encoding, one signature', () => {
       let encoded
       encoded = signing.encode(fixtures.dagJws.oneSig[0])
       expect(encoded).toEqual(fixtures.encodedJws.oneSig[0])
@@ -76,15 +81,14 @@ describe('Signing support', () => {
       expect(encoded).toEqual(fixtures.encodedJws.oneSig[1])
     })
 
-    it('Encodes dag encoding, multiple signatures', () => {
+    it('CID, Encodes dag encoding, multiple signatures', () => {
       const encoded = signing.encode(fixtures.dagJws.multipleSig)
       expect(encoded).toEqual(fixtures.encodedJws.multipleSig)
     })
 
-    it('Throws if payload is not a CID', async () => {
-      const payload = toBase64url(bytes.fromString(JSON.stringify({ json: 'payload' })))
-      const notDagJws = Object.assign({}, fixtures.dagJws.oneSig[0], { payload })
-      expect(() => signing.encode(notDagJws)).toThrow('Not a valid DagJWS')
+    it('JSON, Encodes jws with payload', () => {
+      const encoded = signing.encode(fixtures.dagJws.withPayload)
+      expect(encoded).toEqual(fixtures.encodedJws.withPayload)
     })
   })
 
