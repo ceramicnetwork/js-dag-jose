@@ -1,14 +1,8 @@
 /* eslint-env jest */
 
 import * as dagJose from '../src/index.js'
-import { createDagJWS } from './signing.test.js'
 import { fixtures as sFixtures } from './__fixtures__/signing.fixtures'
 import { fixtures as eFixtures } from './__fixtures__/encryption.fixtures'
-import { convert as toLegacyIpld } from 'blockcodec-to-ipld-format'
-import IPLD from 'ipld'
-import ipldInMem from 'ipld-in-memory'
-import { CID } from 'multiformats/cid'
-import { ES256KSigner } from 'did-jwt'
 
 describe('dag-jose codec', () => {
   describe('DagJWS', () => {
@@ -26,6 +20,9 @@ describe('dag-jose codec', () => {
 
       encoded = dagJose.encode(sFixtures.dagJws.multipleSig)
       expect(encoded).toEqual(sFixtures.blockEncoded.multipleSig)
+
+      encoded = dagJose.encode(sFixtures.dagJws.withPayload)
+      expect(encoded).toEqual(sFixtures.blockEncoded.withPayload)
     })
 
     it('Decode bytes', () => {
@@ -35,21 +32,9 @@ describe('dag-jose codec', () => {
 
       decoded = dagJose.decode(sFixtures.blockEncoded.multipleSig)
       expect(decoded).toEqual(sFixtures.dagJws.multipleSig)
-    })
 
-    it.skip('IPLD integration', async () => {
-      const ipld = await ipldInMem(IPLD)
-      const format = toLegacyIpld(dagJose)
-      ipld.addFormat(format)
-      const signer = ES256KSigner(sFixtures.keys[0].priv)
-      const cidPayload = CID.parse('bagcqcera73rupyla6bauseyk75rslfys3st25spm75ykhvgusqvv2zfqtucq')
-      const dagJws = await createDagJWS(cidPayload, signer)
-      const cid = await ipld.put(dagJws, format.codec)
-      expect(cid.toString()).toEqual(
-        'bagcqcera5p4hvkei322lg3hp3dvrmndlojwcst3gvq2nhledmv4plt2ore2q'
-      )
-      const data = await ipld.get(cid)
-      expect(data).toEqual(sFixtures.dagJws.oneSig[0])
+      decoded = dagJose.decode(sFixtures.blockEncoded.withPayload)
+      expect(decoded).toEqual(sFixtures.dagJws.withPayload)
     })
   })
 
