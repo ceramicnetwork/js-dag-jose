@@ -86,7 +86,7 @@ export function decode(encoded: EncodedJWS): DagJWS {
   }
 }
 
-function replaceCIDs(data: Record<string, any> | any): Record<string, any> | any {
+function replaceCIDs(data: any): any {
   if (typeof data === 'string') {
     if (data.startsWith('ipfs://')) {
       return CID.parse(data.slice(7))
@@ -105,7 +105,7 @@ function replaceCIDs(data: Record<string, any> | any): Record<string, any> | any
 }
 
 function isObject(data: any): data is Record<string, any> {
-  return typeof data === 'object'
+  return typeof data === 'object' && data !== null
 }
 
 function payloadToJSON(data: Uint8Array): any {
