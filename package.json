@@ -1,6 +1,6 @@
 {
   "name": "dag-jose",
-  "version": "5.0.0",
+  "version": "5.1.0",
   "description": "Typescript implementation of the IPLD dag-jose format",
   "main": "./lib/index.js",
   "type": "module",
