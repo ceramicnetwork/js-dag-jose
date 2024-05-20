@@ -1,85 +1,94 @@
 /* eslint-env jest */
 
 import * as dagJose from '../src/index.js'
-import { createDagJWS } from './signing.test.js'
 import { fixtures as sFixtures } from './__fixtures__/signing.fixtures'
 import { fixtures as eFixtures } from './__fixtures__/encryption.fixtures'
-import { convert as toLegacyIpld } from 'blockcodec-to-ipld-format'
-import IPLD from 'ipld'
-import ipldInMem from 'ipld-in-memory'
-import { CID } from 'multiformats/cid'
-import { ES256KSigner } from 'did-jwt'
+
+import * as Block from 'multiformats/block'
+import { sha256 as hasher } from 'multiformats/hashes/sha2'
+
+async function encodeBlock(value) {
+  return Block.encode({ value, hasher, codec: dagJose })
+}
+
+async function decodeBlock(bytes) {
+  return Block.decode({ bytes, hasher, codec: dagJose })
+}
 
 describe('dag-jose codec', () => {
   describe('DagJWS', () => {
-    it('Encode compact jws', () => {
-      const encoded = dagJose.encode(sFixtures.compact)
-      expect(encoded).toEqual(sFixtures.blockEncoded.oneSig[0])
+    it('Encode compact jws', async () => {
+      const block = await encodeBlock(sFixtures.compact)
+      expect(block.bytes).toEqual(sFixtures.blockEncoded.oneSig[0])
+      expect(block.cid.toString()).toEqual(sFixtures.cids.oneSig[0])
     })
 
-    it('Encode general jws', () => {
-      let encoded = dagJose.encode(sFixtures.dagJws.oneSig[0])
-      expect(encoded).toEqual(sFixtures.blockEncoded.oneSig[0])
+    it('Encode general jws', async () => {
+      let block = await encodeBlock(sFixtures.dagJws.oneSig[0])
+      expect(block.bytes).toEqual(sFixtures.blockEncoded.oneSig[0])
+      expect(block.cid.toString()).toEqual(sFixtures.cids.oneSig[0])
 
-      encoded = dagJose.encode(sFixtures.dagJws.oneSig[1])
-      expect(encoded).toEqual(sFixtures.blockEncoded.oneSig[1])
+      block = await encodeBlock(sFixtures.dagJws.oneSig[1])
+      expect(block.bytes).toEqual(sFixtures.blockEncoded.oneSig[1])
+      expect(block.cid.toString()).toEqual(sFixtures.cids.oneSig[1])
 
-      encoded = dagJose.encode(sFixtures.dagJws.multipleSig)
-      expect(encoded).toEqual(sFixtures.blockEncoded.multipleSig)
+      block = await encodeBlock(sFixtures.dagJws.multipleSig)
+      expect(block.bytes).toEqual(sFixtures.blockEncoded.multipleSig)
+      expect(block.cid.toString()).toEqual(sFixtures.cids.multipleSig)
+
+      block = await encodeBlock(sFixtures.dagJws.withPayload)
+      expect(block.bytes).toEqual(sFixtures.blockEncoded.withPayload)
+      expect(block.cid.toString()).toEqual(sFixtures.cids.withPayload)
     })
 
-    it('Decode bytes', () => {
-      let decoded
-      decoded = dagJose.decode(sFixtures.blockEncoded.oneSig[0])
-      expect(decoded).toEqual(sFixtures.dagJws.oneSig[0])
+    it('Decode bytes', async () => {
+      let block = await decodeBlock(sFixtures.blockEncoded.oneSig[0])
+      expect(block.value).toEqual(sFixtures.dagJws.oneSig[0])
+      expect(block.cid.toString()).toEqual(sFixtures.cids.oneSig[0])
 
-      decoded = dagJose.decode(sFixtures.blockEncoded.multipleSig)
-      expect(decoded).toEqual(sFixtures.dagJws.multipleSig)
-    })
+      block = await decodeBlock(sFixtures.blockEncoded.multipleSig)
+      expect(block.value).toEqual(sFixtures.dagJws.multipleSig)
+      expect(block.cid.toString()).toEqual(sFixtures.cids.multipleSig)
 
-    it.skip('IPLD integration', async () => {
-      const ipld = await ipldInMem(IPLD)
-      const format = toLegacyIpld(dagJose)
-      ipld.addFormat(format)
-      const signer = ES256KSigner(sFixtures.keys[0].priv)
-      const cidPayload = CID.parse('bagcqcera73rupyla6bauseyk75rslfys3st25spm75ykhvgusqvv2zfqtucq')
-      const dagJws = await createDagJWS(cidPayload, signer)
-      const cid = await ipld.put(dagJws, format.codec)
-      expect(cid.toString()).toEqual(
-        'bagcqcera5p4hvkei322lg3hp3dvrmndlojwcst3gvq2nhledmv4plt2ore2q'
-      )
-      const data = await ipld.get(cid)
-      expect(data).toEqual(sFixtures.dagJws.oneSig[0])
+      block = await decodeBlock(sFixtures.blockEncoded.withPayload)
+      expect(block.value).toEqual(sFixtures.dagJws.withPayload)
+      expect(block.cid.toString()).toEqual(sFixtures.cids.withPayload)
     })
   })
 
   describe('DagJWE', () => {
-    it('Encode compact jwe', () => {
-      const encoded = dagJose.encode(eFixtures.compact)
-      expect(encoded).toEqual(eFixtures.blockEncoded.dir)
+    it('Encode compact jwe', async () => {
+      const block = await encodeBlock(eFixtures.compact)
+      expect(block.bytes).toEqual(eFixtures.blockEncoded.dir)
+      expect(block.cid.toString()).toEqual(eFixtures.cids.dir)
     })
 
-    it('Encode general jwe', () => {
-      let encoded = dagJose.encode(eFixtures.dagJwe.dir)
-      expect(encoded).toEqual(eFixtures.blockEncoded.dir)
+    it('Encode general jwe', async () => {
+      let block = await encodeBlock(eFixtures.dagJwe.dir)
+      expect(block.bytes).toEqual(eFixtures.blockEncoded.dir)
+      expect(block.cid.toString()).toEqual(eFixtures.cids.dir)
 
-      encoded = dagJose.encode(eFixtures.dagJwe.oneRecip)
-      expect(encoded).toEqual(eFixtures.blockEncoded.oneRecip)
+      block = await encodeBlock(eFixtures.dagJwe.oneRecip)
+      expect(block.bytes).toEqual(eFixtures.blockEncoded.oneRecip)
+      expect(block.cid.toString()).toEqual(eFixtures.cids.oneRecip)
 
-      encoded = dagJose.encode(eFixtures.dagJwe.multipleRecip)
-      expect(encoded).toEqual(eFixtures.blockEncoded.multipleRecip)
+      block = await encodeBlock(eFixtures.dagJwe.multipleRecip)
+      expect(block.bytes).toEqual(eFixtures.blockEncoded.multipleRecip)
+      expect(block.cid.toString()).toEqual(eFixtures.cids.multipleRecip)
     })
 
-    it('Decode bytes', () => {
-      let decoded
-      decoded = dagJose.decode(eFixtures.blockEncoded.dir)
-      expect(decoded).toEqual(eFixtures.dagJwe.dir)
+    it('Decode bytes', async () => {
+      let block = await decodeBlock(eFixtures.blockEncoded.dir)
+      expect(block.value).toEqual(eFixtures.dagJwe.dir)
+      expect(block.cid.toString()).toEqual(eFixtures.cids.dir)
 
-      decoded = dagJose.decode(eFixtures.blockEncoded.oneRecip)
-      expect(decoded).toEqual(eFixtures.dagJwe.oneRecip)
+      block = await decodeBlock(eFixtures.blockEncoded.oneRecip)
+      expect(block.value).toEqual(eFixtures.dagJwe.oneRecip)
+      expect(block.cid.toString()).toEqual(eFixtures.cids.oneRecip)
 
-      decoded = dagJose.decode(eFixtures.blockEncoded.multipleRecip)
-      expect(decoded).toEqual(eFixtures.dagJwe.multipleRecip)
+      block = await decodeBlock(eFixtures.blockEncoded.multipleRecip)
+      expect(block.value).toEqual(eFixtures.dagJwe.multipleRecip)
+      expect(block.cid.toString()).toEqual(eFixtures.cids.multipleRecip)
     })
   })
 
