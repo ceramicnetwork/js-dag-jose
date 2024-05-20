@@ -55,7 +55,7 @@ Create a signed envelope block:
 ```js
 const signer = ES256KSigner(privkey)
 // arbitrary data to DAG-CBOR encode, we get a:
-// { cid:CID, linkedBlock: Uint8Array }
+// { cid: CID, linkedBlock: Uint8Array }
 const payloadBlock = await encodePayload(payload)
 // sign the CID as a JWS using our signer
 const jws = await createJWS(toJWSPayload(payloadBlock), signer)
@@ -105,7 +105,7 @@ const payloadBlock = await Block.create({ bytes: payloadBytes, cid: payloadCid, 
 
 ## JWE Encryption Usage
 
-When using DAG-JOSE (for JWE or JWS) with js-IPFS, you will need to convert it from a raw multiformats style codec to a legacy IPLD codec using [blockcodec-to-ipld-format](https://github.com/ipld/js-blockcodec-to-ipld-format).
+When using DAG-JOSE (for JWE or JWS) with js-IPFS, you will need to convert it from a raw multiformats style codec to a legacy IPLD codec using [ipld-format-to-blockcodec](https://github.com/ipld/js-ipld-format-to-blockcodec).
 
 _The following example is available in complete form in [example-ipfs.mjs](./example-ipfs.mjs)._
 
@@ -114,7 +114,7 @@ _A plain IPLD (without IPFS, for cases where you are managing the block store) v
 ```js
 // IPLD & IPFS
 import { create as createIpfs } from 'ipfs'
-import { convert as toLegacyIpld } from 'blockcodec-to-ipld-format'
+import { convert } from 'ipld-format-to-blockcodec';
 
 import * as dagJose from 'dag-jose'
 ```
@@ -144,13 +144,11 @@ import { generateKeyPairFromSeed } from '@stablelib/x25519'
 Set up js-IPFS:
 
 ```js
-const dagJoseIpldFormat = toLegacyIpld(dagJose)
-
 // Async setup tasks
 async function setup () {
   console.log('Starting IPFS ...')
   // Instantiate an IPFS node, that knows how to deal with DAG-JOSE blocks
-  ipfs = await createIpfs({ ipld: { formats: [dagJoseIpldFormat] } })
+  ipfs = await createIpfs();
 }
 ```
 
@@ -166,7 +164,7 @@ const storeEncrypted = async (payload, key) => {
   // encrypt into JWE container layout using secret key
   const jwe = await createJWE(cleartext, [dirEncrypter])
   // let IPFS store the bytes using the DAG-JOSE codec and return a CID
-  const cid = await ipfs.dag.put(jwe, { format: dagJoseIpldFormat.codec, hashAlg: 'sha2-256' })
+  const cid = await ipfs.dag.put(jwe, { format: dagJose.codec, hashAlg: 'sha2-256' })
   console.log(`Encrypted block CID: \u001b[32m${cid}\u001b[39m`)
   return cid
 }
@@ -206,7 +204,7 @@ const storeEncrypted = async (payload, pubkey) => {
   // encrypt into JWE container layout using public key
   const jwe = await createJWE(cleartext, [asymEncrypter])
   // let IPFS store the bytes using the DAG-JOSE codec and return a CID
-  const cid = await ipfs.dag.put(jwe, { format: dagJoseIpldFormat.codec, hashAlg: 'sha2-256' })
+  const cid = await ipfs.dag.put(jwe, { format: dagJose.codec, hashAlg: 'sha2-256' })
   console.log(`Encrypted block CID: \u001b[32m${cid}\u001b[39m`)
   return cid
 }
